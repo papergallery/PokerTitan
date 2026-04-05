@@ -51,21 +51,32 @@ export function PlayerSeat({ player, isCurrentTurn, isMe, timeLeft = 30, size = 
       ${isCurrentTurn ? 'ring-2 ring-accent bg-accent/10' : ''}
       ${isFolded || isEliminated ? 'opacity-40' : ''}
     `}>
+      {/* Cards */}
       <div className="flex gap-1">
         {player.cards.map((card, i) => (
           <CardFace key={i} card={card} size={size} />
         ))}
       </div>
+
+      {/* Avatar + name + timer */}
       <div className="flex items-center gap-1">
         <Avatar name={player.name} avatarUrl={player.avatarUrl} size={avatarSize} />
+        <span className={`${nameClass} text-muted max-w-[80px] truncate`}>
+          {isMe ? 'You' : player.name}
+        </span>
         {isCurrentTurn && <Timer timeLeft={timeLeft} />}
       </div>
-      <span className={`${nameClass} text-muted max-w-[80px] truncate`}>
-        {isMe ? 'You' : player.name}
-      </span>
+
+      {/* Chips */}
       <span className={`${chipsClass} text-accent font-semibold`}>{player.chips} 🪙</span>
+
+      {/* Bet this round */}
       {player.bet > 0 && (
-        <span className="text-xs text-yellow-400">Bet: {player.bet}</span>
+        <div className="flex items-center gap-1 bg-yellow-500/20 border border-yellow-500/40 rounded-lg px-2 py-0.5">
+          <span className={`${size === 'lg' ? 'text-base' : 'text-sm'} text-yellow-400 font-bold`}>
+            🪙 {player.bet}
+          </span>
+        </div>
       )}
     </div>
   )
