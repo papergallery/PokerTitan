@@ -1,5 +1,5 @@
 interface AvatarProps {
-  name: string
+  name?: string
   avatarUrl?: string
   size?: 'sm' | 'md' | 'lg'
 }
@@ -12,14 +12,15 @@ const colors = [
 ]
 
 export function Avatar({ name, avatarUrl, size = 'md' }: AvatarProps) {
-  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
-  const colorIdx = name.charCodeAt(0) % colors.length
+  const safeName = name || '?'
+  const initials = safeName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
+  const colorIdx = safeName.charCodeAt(0) % colors.length
 
   if (avatarUrl) {
     return (
       <img
         src={avatarUrl}
-        alt={name}
+        alt={safeName}
         className={`${sizes[size]} rounded-full object-cover`}
       />
     )
