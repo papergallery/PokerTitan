@@ -11,14 +11,14 @@ export function MatchmakingSearch({ format, elapsed }: MatchmakingSearchProps) {
 
   return (
     <div className="flex flex-col items-center gap-8">
-      <div className="relative w-80 h-80">
+      <div className="relative w-[250px] h-[250px]">
         <motion.div
-          className="w-80 h-80 rounded-full border-4 border-accent"
+          className="w-[250px] h-[250px] rounded-full border-4 border-accent"
           animate={{ scale: [1, 1.15, 1], opacity: [1, 0.6, 1] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute inset-0 w-80 h-80 rounded-full border-2 border-accent/30"
+          className="absolute inset-0 w-[250px] h-[250px] rounded-full border-2 border-accent/30"
           animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
         />

@@ -31,20 +31,20 @@ export default function LobbyPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <span className="text-xl font-bold text-white">PokerTitan</span>
-        <div className="flex items-center gap-3">
+      <header className="flex items-center justify-between px-9 py-6 border-b border-border">
+        <span className="text-2xl font-bold text-white">PokerTitan</span>
+        <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(`/profile/${user.id}`)}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            <Avatar name={user.name} avatarUrl={user.avatarUrl} size="sm" />
-            <span className="text-white text-sm font-medium">{user.name}</span>
+            <Avatar name={user.name} avatarUrl={user.avatarUrl} size="md" />
+            <span className="text-white text-base font-medium">{user.name}</span>
           </button>
-          <MMRBadge mmr={user.mmr} size="sm" />
+          <MMRBadge mmr={user.mmr} />
           <button
             onClick={() => logoutMutation.mutate()}
-            className="text-muted text-sm hover:text-white transition-colors"
+            className="text-muted text-base hover:text-white transition-colors"
           >
             Выйти
           </button>
@@ -61,7 +61,7 @@ export default function LobbyPage() {
           Выбери формат
         </motion.h2>
 
-        <div className="flex gap-6">
+        <div className="flex gap-9">
           {([
             { id: '1v1' as Format, title: '1 на 1', desc: 'Быстрый матч · 2 игрока', icon: '⚔️' },
             { id: '5-player' as Format, title: 'Турнир', desc: '5 игроков · Больше MMR', icon: '🏆' },
@@ -72,15 +72,15 @@ export default function LobbyPage() {
               animate={{ opacity: 1, y: 0 }}
               onClick={() => setSelected(f.id)}
               className={`
-                w-56 p-8 rounded-2xl border-2 text-left transition-all
+                w-[336px] p-12 rounded-2xl border-2 text-left transition-all
                 ${selected === f.id
                   ? 'border-accent bg-accent/10'
                   : 'border-border bg-surface hover:border-accent/50'}
               `}
             >
-              <div className="text-5xl mb-4">{f.icon}</div>
-              <div className="text-white font-semibold text-lg">{f.title}</div>
-              <div className="text-muted text-sm mt-1">{f.desc}</div>
+              <div className="text-7xl mb-6">{f.icon}</div>
+              <div className="text-white font-semibold text-2xl">{f.title}</div>
+              <div className="text-muted text-base mt-2">{f.desc}</div>
             </motion.button>
           ))}
         </div>
