@@ -85,7 +85,7 @@ export async function userRoutes(app: FastifyInstance): Promise<void> {
 
     const ext = data.mimetype.split('/')[1].replace('jpeg', 'jpg');
     const filename = `${userId}-${crypto.randomUUID()}.${ext}`;
-    const uploadsDir = path.join(__dirname, '../../uploads/avatars');
+    const uploadsDir = path.join(__dirname, '../../../uploads/avatars');
 
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });

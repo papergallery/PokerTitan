@@ -4,9 +4,7 @@ import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
 import fastifyOauth2 from '@fastify/oauth2';
 import fastifyMultipart from '@fastify/multipart';
-import fastifyStatic from '@fastify/static';
 import { Server as SocketIOServer } from 'socket.io';
-import path from 'path';
 import dotenv from 'dotenv';
 
 import { runMigrations } from './db/migrations';
@@ -57,11 +55,6 @@ async function main() {
 
   await app.register(fastifyMultipart, {
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  });
-
-  await app.register(fastifyStatic, {
-    root: path.join(__dirname, '../../uploads'),
-    prefix: '/uploads/',
   });
 
   await app.register(authRoutes);
