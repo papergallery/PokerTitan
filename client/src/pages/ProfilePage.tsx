@@ -5,6 +5,7 @@ import { usersApi } from '../api/users'
 import { useAuth } from '../hooks/useAuth'
 import { Avatar } from '../components/ui/Avatar'
 import { MMRBadge } from '../components/ui/MMRBadge'
+import { AvatarCropModal } from '../components/ui/AvatarCropModal'
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
@@ -17,6 +18,7 @@ export default function ProfilePage() {
   const [nameValue, setNameValue] = useState('')
   const [savingName, setSavingName] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { data: user, refetch } = useQuery({
@@ -39,15 +41,23 @@ export default function ProfilePage() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => setCropSrc(reader.result as string)
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const handleCropSave = async (blob: Blob) => {
+    setCropSrc(null)
     setUploading(true)
     try {
+      const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
       await usersApi.uploadAvatar(file)
       await qc.invalidateQueries({ queryKey: ['me'] })
       await qc.invalidateQueries({ queryKey: ['user', userId] })
       refetch()
     } finally {
       setUploading(false)
-      e.target.value = ''
     }
   }
 
@@ -71,6 +81,14 @@ export default function ProfilePage() {
   }
 
   return (
+    <>
+    {cropSrc && (
+      <AvatarCropModal
+        imageSrc={cropSrc}
+        onSave={handleCropSave}
+        onCancel={() => setCropSrc(null)}
+      />
+    )}
     <div className="min-h-screen max-w-xl mx-auto px-4 py-10">
       {/* Profile header */}
       <div className="flex items-center gap-4 mb-8">
@@ -185,5 +203,6 @@ export default function ProfilePage() {
         <p className="text-muted">Нет сыгранных турниров</p>
       )}
     </div>
+    </>
   )
 }
