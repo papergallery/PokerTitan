@@ -11,7 +11,9 @@ interface ActionPanelProps {
 }
 
 export function ActionPanel({ currentBet, myChips, myBet, onAction }: ActionPanelProps) {
-  const [raiseAmount, setRaiseAmount] = useState(currentBet * 2 || 40)
+  const maxRaise = myChips
+  const minRaise = Math.min(currentBet * 2 || 40, maxRaise)
+  const [raiseAmount, setRaiseAmount] = useState(minRaise)
   const toCall = Math.max(0, currentBet - myBet)
   const canCheck = toCall === 0
 
@@ -38,10 +40,10 @@ export function ActionPanel({ currentBet, myChips, myBet, onAction }: ActionPane
       <div className="flex items-center gap-2">
         <input
           type="range"
-          min={currentBet * 2 || 40}
-          max={myChips + myBet}
+          min={minRaise}
+          max={maxRaise}
           step={10}
-          value={raiseAmount}
+          value={Math.min(raiseAmount, maxRaise)}
           onChange={e => setRaiseAmount(Number(e.target.value))}
           className="w-24 accent-accent"
         />
