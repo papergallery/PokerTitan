@@ -12,6 +12,8 @@ interface JwtPayload {
 
 // In-memory game states: tournamentId → GameState
 const gameStates = new Map<number, gameEngine.GameState>();
+// Player names: tournamentId → (userId → { name, avatarUrl })
+const playerNames = new Map<number, Map<number, { name: string; avatarUrl?: string }>>();
 // Turn timers: tournamentId → NodeJS.Timeout
 const turnTimers = new Map<number, ReturnType<typeof setTimeout>>();
 
@@ -24,13 +26,18 @@ function getPersonalizedState(
     deck: undefined, // never send deck to clients
     currentPlayerId: state.players[state.currentPlayerIndex]?.userId,
     myUserId: userId,
-    players: state.players.map((p) => ({
-      ...p,
-      cards:
-        p.userId === userId || state.stage === 'showdown'
-          ? p.cards
-          : p.cards.map(() => null),
-    })),
+    players: state.players.map((p) => {
+      const info = playerNames.get(state.tournamentId)?.get(p.userId);
+      return {
+        ...p,
+        name: info?.name ?? String(p.userId),
+        avatarUrl: info?.avatarUrl,
+        cards:
+          p.userId === userId || state.stage === 'showdown'
+            ? p.cards
+            : p.cards.map(() => null),
+      };
+    }),
   };
 }
 
@@ -148,11 +155,13 @@ async function finishHand(
 
     const endPayload = places.map((p) => ({
       ...p,
+      name: playerNames.get(tournamentId)?.get(p.userId)?.name ?? String(p.userId),
       mmrChange: mmrChanges.find((m) => m.userId === p.userId)?.mmrChange ?? 0,
     }));
 
     io.to(`tournament:${tournamentId}`).emit('game:end', { places: endPayload });
     gameStates.delete(tournamentId);
+    playerNames.delete(tournamentId);
   } else {
     // Start next hand
     const nextState = gameEngine.createGameState(
@@ -190,6 +199,18 @@ async function createTournament(
       [tournamentId, p.userId]
     );
   }
+
+  // Fetch and store player names/avatars
+  const usersResult = await db.query<{ id: number; name: string; avatar_url?: string }>(
+    'SELECT id, name, avatar_url FROM users WHERE id = ANY($1)',
+    [players.map((p) => p.userId)]
+  );
+  const names = new Map<number, { name: string; avatarUrl?: string }>();
+  for (const row of usersResult.rows) {
+    names.set(row.id, { name: row.name, avatarUrl: row.avatar_url ?? undefined });
+  }
+  playerNames.set(tournamentId, names);
+
   return tournamentId;
 }
 
