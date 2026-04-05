@@ -7,6 +7,8 @@ import LobbyPage from './pages/LobbyPage'
 import QueuePage from './pages/QueuePage'
 import GamePage from './pages/GamePage'
 import ProfilePage from './pages/ProfilePage'
+import ShopPage from './pages/ShopPage'
+import OfferPage from './pages/OfferPage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -31,6 +33,8 @@ export default function App() {
       <Route path="/queue" element={<PrivateRoute><QueuePage /></PrivateRoute>} />
       <Route path="/game/:id" element={<PrivateRoute><GamePage /></PrivateRoute>} />
       <Route path="/profile/:id" element={<ProfilePage />} />
+      <Route path="/shop" element={<ShopPage />} />
+      <Route path="/offer" element={<OfferPage />} />
     </Routes>
   )
 }
