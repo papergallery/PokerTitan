@@ -28,6 +28,8 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       PORT: 3001
       CLIENT_URL: http://${SERVER_IP}
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,3 +47,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
