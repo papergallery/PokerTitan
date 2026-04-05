@@ -61,7 +61,7 @@ export default function LobbyPage() {
           Выбери формат
         </motion.h2>
 
-        <div className="flex gap-4">
+        <div className="flex gap-6">
           {([
             { id: '1v1' as Format, title: '1 на 1', desc: 'Быстрый матч · 2 игрока', icon: '⚔️' },
             { id: '5-player' as Format, title: 'Турнир', desc: '5 игроков · Больше MMR', icon: '🏆' },
@@ -72,14 +72,14 @@ export default function LobbyPage() {
               animate={{ opacity: 1, y: 0 }}
               onClick={() => setSelected(f.id)}
               className={`
-                w-44 p-6 rounded-2xl border-2 text-left transition-all
+                w-56 p-8 rounded-2xl border-2 text-left transition-all
                 ${selected === f.id
                   ? 'border-accent bg-accent/10'
                   : 'border-border bg-surface hover:border-accent/50'}
               `}
             >
-              <div className="text-3xl mb-3">{f.icon}</div>
-              <div className="text-white font-semibold">{f.title}</div>
+              <div className="text-5xl mb-4">{f.icon}</div>
+              <div className="text-white font-semibold text-lg">{f.title}</div>
               <div className="text-muted text-sm mt-1">{f.desc}</div>
             </motion.button>
           ))}
