@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+deploy/.env
+deploy/nginx/ssl/
+*.log
+.DS_Store
+coverage/
+.claude/settings.local.json
