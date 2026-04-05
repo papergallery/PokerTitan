@@ -216,6 +216,9 @@ export function initSocketHandler(io: Server, app: FastifyInstance): void {
             format,
             players: matched.map((p) => ({ userId: p.userId, mmr: p.mmr })),
           });
+          console.log(`[MM] Notified user=${entry.userId} socket=${entry.socketId} → tournament=${tournamentId}`);
+        } else {
+          console.log(`[MM] WARNING: user=${entry.userId} has no active socket (socketId="${entry.socketId}") — cannot notify`);
         }
       }
 
@@ -246,6 +249,7 @@ export function initSocketHandler(io: Server, app: FastifyInstance): void {
     }
 
     const userId = (socket.data as { userId: number }).userId;
+    console.log(`[Socket] Connected: user=${userId} socket=${socket.id}`);
 
     socket.on('join-queue', (data: { format: '1v1' | '5-player'; mmr: number }) => {
       matchmaking.joinQueue(
@@ -291,7 +295,8 @@ export function initSocketHandler(io: Server, app: FastifyInstance): void {
       }
     );
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (reason) => {
+      console.log(`[Socket] Disconnected: user=${userId} socket=${socket.id} reason=${reason}`);
       matchmaking.leaveAllQueues(userId);
     });
   });

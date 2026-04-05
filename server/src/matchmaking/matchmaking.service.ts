@@ -12,18 +12,39 @@ function getQueue(format: '1v1' | '5-player'): QueueEntry[] {
   return format === '1v1' ? queue1v1 : queue5player;
 }
 
+function logQueue(format: '1v1' | '5-player'): void {
+  const queue = getQueue(format);
+  if (queue.length === 0) return;
+  const entries = queue.map(
+    (e) => `  user=${e.userId} mmr=${e.mmr} socket=${e.socketId || '(none)'} wait=${Math.round((Date.now() - e.joinedAt.getTime()) / 1000)}s`
+  );
+  console.log(`[MM] Queue ${format} (${queue.length}):\n${entries.join('\n')}`);
+}
+
 export function joinQueue(entry: QueueEntry, format: '1v1' | '5-player'): void {
   const queue = getQueue(format);
-  // Avoid duplicates
-  if (!queue.find((e) => e.userId === entry.userId)) {
+  const existing = queue.find((e) => e.userId === entry.userId);
+  if (existing) {
+    if (entry.socketId) {
+      console.log(`[MM] user=${entry.userId} updated socketId → ${entry.socketId} (${format})`);
+      existing.socketId = entry.socketId;
+    } else {
+      console.log(`[MM] user=${entry.userId} already in queue ${format}, skipped (no socketId)`);
+    }
+  } else {
     queue.push(entry);
+    console.log(`[MM] user=${entry.userId} mmr=${entry.mmr} joined ${format} via ${entry.socketId ? 'socket' : 'REST'}`);
+    logQueue(format);
   }
 }
 
 export function leaveQueue(userId: number, format: '1v1' | '5-player'): void {
   const queue = getQueue(format);
   const idx = queue.findIndex((e) => e.userId === userId);
-  if (idx !== -1) queue.splice(idx, 1);
+  if (idx !== -1) {
+    queue.splice(idx, 1);
+    console.log(`[MM] user=${userId} left queue ${format}`);
+  }
 }
 
 export function leaveAllQueues(userId: number): void {
@@ -53,12 +74,15 @@ export function tryMatch(format: '1v1' | '5-player'): QueueEntry[] | null {
       (e) => now.getTime() - e.joinedAt.getTime() > 30_000
     );
     const mmrRange = hasLongWaiter ? 500 : 200;
+    const diff = maxMmr - minMmr;
 
-    if (maxMmr - minMmr <= mmrRange) {
-      // Remove matched players from queue
+    console.log(`[MM] tryMatch ${format}: ${queue.length} in queue, diff=${diff}, range=${mmrRange}`);
+
+    if (diff <= mmrRange) {
       for (const entry of group) {
         leaveQueue(entry.userId, format);
       }
+      console.log(`[MM] MATCHED ${format}: ${group.map((e) => `user=${e.userId} socket=${e.socketId || '(none)'}`).join(', ')}`);
       return group;
     }
   }
