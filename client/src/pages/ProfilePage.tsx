@@ -90,11 +90,11 @@ export default function ProfilePage() {
         onCancel={() => setCropSrc(null)}
       />
     )}
-    <div className="min-h-screen max-w-xl mx-auto px-4 py-10">
+    <div className="min-h-screen max-w-2xl mx-auto px-6 py-14">
       {/* Nav */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-12">
         <button onClick={() => navigate('/lobby')} className="text-muted hover:text-white transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 5l-7 7 7 7"/>
           </svg>
         </button>
@@ -104,7 +104,7 @@ export default function ProfilePage() {
             className="text-muted hover:text-white transition-colors"
             title="Выйти"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
               <polyline points="16 17 21 12 16 7"/>
               <line x1="21" y1="12" x2="9" y2="12"/>
@@ -114,7 +114,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-6 mb-12">
         {/* Avatar with overlay for owner */}
         <div className="relative inline-block">
           {isOwner && (
@@ -130,13 +130,13 @@ export default function ProfilePage() {
             className={isOwner ? 'cursor-pointer' : ''}
             onClick={isOwner ? handleAvatarClick : undefined}
           >
-            <Avatar name={user.name} avatarUrl={user.avatarUrl} size="lg" />
+            <Avatar name={user.name} avatarUrl={user.avatarUrl} size="xl" />
             {isOwner && (
               <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                 {uploading ? (
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                     <circle cx="12" cy="13" r="4" />
                   </svg>
@@ -149,9 +149,9 @@ export default function ProfilePage() {
         {/* Name with edit */}
         <div>
           {editingName ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <input
-                className="bg-[#242424] text-white text-2xl font-bold rounded-lg px-3 py-1 border border-border outline-none focus:border-accent w-48"
+                className="bg-[#242424] text-white text-3xl font-bold rounded-lg px-4 py-2 border border-border outline-none focus:border-accent w-64"
                 value={nameValue}
                 onChange={e => setNameValue(e.target.value)}
                 onKeyDown={e => {
@@ -164,27 +164,27 @@ export default function ProfilePage() {
               <button
                 onClick={saveName}
                 disabled={savingName}
-                className="text-sm text-accent hover:text-green-400 disabled:opacity-50"
+                className="text-base text-accent hover:text-green-400 disabled:opacity-50"
               >
                 {savingName ? '...' : 'Сохранить'}
               </button>
               <button
                 onClick={() => setEditingName(false)}
-                className="text-sm text-muted hover:text-white"
+                className="text-base text-muted hover:text-white"
               >
                 Отмена
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-white">{user.name}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-white">{user.name}</h1>
               {isOwner && (
                 <button
                   onClick={startEditName}
                   className="text-muted hover:text-white transition-colors"
                   title="Изменить имя"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                   </svg>
@@ -197,25 +197,25 @@ export default function ProfilePage() {
       </div>
 
       {/* History */}
-      <h2 className="text-lg font-semibold text-white mb-3">История турниров</h2>
+      <h2 className="text-2xl font-semibold text-white mb-4">История турниров</h2>
       {history && history.length > 0 ? (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {history.map(h => (
             <div
               key={h.tournamentId}
-              className="flex items-center justify-between bg-surface rounded-xl px-4 py-3 border border-border"
+              className="flex items-center justify-between bg-surface rounded-xl px-6 py-4 border border-border"
             >
               <div>
-                <span className="text-white text-sm font-medium">
+                <span className="text-white text-base font-medium">
                   {h.format === '1v1' ? '1 на 1' : 'Турнир 5 игроков'}
                 </span>
-                <span className="text-muted text-xs ml-2">#{h.place} место</span>
+                <span className="text-muted text-sm ml-2">#{h.place} место</span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className={`text-sm font-semibold ${h.mmrChange >= 0 ? 'text-accent' : 'text-red-400'}`}>
+              <div className="flex items-center gap-4">
+                <span className={`text-base font-semibold ${h.mmrChange >= 0 ? 'text-accent' : 'text-red-400'}`}>
                   {h.mmrChange >= 0 ? '+' : ''}{h.mmrChange} MMR
                 </span>
-                <span className="text-muted text-xs">
+                <span className="text-muted text-sm">
                   {new Date(h.finishedAt).toLocaleDateString('ru-RU')}
                 </span>
               </div>
@@ -223,7 +223,7 @@ export default function ProfilePage() {
           ))}
         </div>
       ) : (
-        <p className="text-muted">Нет сыгранных турниров</p>
+        <p className="text-muted text-base">Нет сыгранных турниров</p>
       )}
     </div>
     </>
