@@ -78,12 +78,12 @@ export async function userRoutes(app: FastifyInstance): Promise<void> {
     const data = await req.file();
     if (!data) return reply.code(400).send({ error: 'No file provided' });
 
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowed.includes(data.mimetype)) {
-      return reply.code(400).send({ error: 'Only JPEG, PNG, WebP and GIF are allowed' });
+    if (!data.mimetype.startsWith('image/')) {
+      return reply.code(400).send({ error: 'Only image files are allowed' });
     }
 
-    const ext = data.mimetype.split('/')[1].replace('jpeg', 'jpg');
+    // Frontend always sends JPEG after cropping on canvas
+    const ext = 'jpg';
     const filename = `${userId}-${crypto.randomUUID()}.${ext}`;
     const uploadsDir = path.join(__dirname, '../../../uploads/avatars');
 
