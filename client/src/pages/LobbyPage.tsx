@@ -64,7 +64,7 @@ export default function LobbyPage() {
         <div className="flex gap-4">
           {([
             { id: '1v1' as Format, title: '1 на 1', desc: 'Быстрый матч · 2 игрока', icon: '⚔️' },
-            { id: '5-player' as Format, title: 'Турнир 5×5', desc: '5 игроков · Больше MMR', icon: '🏆' },
+            { id: '5-player' as Format, title: 'Турнир', desc: '5 игроков · Больше MMR', icon: '🏆' },
           ]).map(f => (
             <motion.button
               key={f.id}

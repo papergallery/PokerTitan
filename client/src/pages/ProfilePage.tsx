@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { usersApi } from '../api/users'
 import { useAuth } from '../hooks/useAuth'
@@ -10,8 +10,9 @@ import { AvatarCropModal } from '../components/ui/AvatarCropModal'
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
   const userId = parseInt(id ?? '0', 10)
-  const { user: me } = useAuth()
+  const { user: me, logoutMutation } = useAuth()
   const qc = useQueryClient()
+  const navigate = useNavigate()
   const isOwner = me?.id === userId
 
   const [editingName, setEditingName] = useState(false)
@@ -90,6 +91,28 @@ export default function ProfilePage() {
       />
     )}
     <div className="min-h-screen max-w-xl mx-auto px-4 py-10">
+      {/* Nav */}
+      <div className="flex items-center justify-between mb-8">
+        <button onClick={() => navigate('/lobby')} className="text-muted hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+        </button>
+        {isOwner && (
+          <button
+            onClick={() => logoutMutation.mutate(undefined, { onSuccess: () => navigate('/') })}
+            className="text-muted hover:text-white transition-colors"
+            title="Выйти"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        )}
+      </div>
+
       {/* Profile header */}
       <div className="flex items-center gap-4 mb-8">
         {/* Avatar with overlay for owner */}
@@ -184,7 +207,7 @@ export default function ProfilePage() {
             >
               <div>
                 <span className="text-white text-sm font-medium">
-                  {h.format === '1v1' ? '1 на 1' : 'Турнир 5×5'}
+                  {h.format === '1v1' ? '1 на 1' : 'Турнир 5 игроков'}
                 </span>
                 <span className="text-muted text-xs ml-2">#{h.place} место</span>
               </div>

@@ -30,7 +30,7 @@ export function MatchmakingSearch({ format, elapsed }: MatchmakingSearchProps) {
       <div className="text-center">
         <p className="text-white text-lg font-semibold">Поиск игры...</p>
         <p className="text-muted text-sm mt-1">
-          {format === '1v1' ? '1 на 1' : 'Турнир 5×5'} · {mins}:{secs}
+          {format === '1v1' ? '1 на 1' : 'Турнир 5 игроков'} · {mins}:{secs}
         </p>
       </div>
     </div>
