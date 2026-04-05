@@ -1,11 +1,12 @@
 import { FastifyInstance } from 'fastify';
 import * as matchmakingService from '../matchmaking/matchmaking.service';
+import { GameFormat } from '../matchmaking/matchmaking.service';
 import { getUserById } from '../auth/auth.service';
 
 const COOKIE_NAME = 'token';
 
 export async function matchmakingRoutes(app: FastifyInstance): Promise<void> {
-  app.post<{ Body: { format: '1v1' | '5-player' } }>(
+  app.post<{ Body: { format: GameFormat } }>(
     '/matchmaking/join',
     async (req, reply) => {
       const token = req.cookies[COOKIE_NAME];
@@ -20,7 +21,7 @@ export async function matchmakingRoutes(app: FastifyInstance): Promise<void> {
       }
 
       const { format } = req.body;
-      if (format !== '1v1' && format !== '5-player') {
+      if (!['1v1', '5-player', '1v1-turbo', '5-player-bounty'].includes(format)) {
         return reply.code(400).send({ error: 'Invalid format' });
       }
 

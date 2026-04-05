@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { FastifyInstance } from 'fastify';
 import * as matchmaking from '../matchmaking/matchmaking.service';
+import { GameFormat } from '../matchmaking/matchmaking.service';
 import * as gameEngine from '../game/game.engine';
 import { calculateMMRChanges } from '../game/mmr';
 import { db } from '../db/client';
@@ -16,6 +17,13 @@ const gameStates = new Map<number, gameEngine.GameState>();
 const playerNames = new Map<number, Map<number, { name: string; avatarUrl?: string }>>();
 // Turn timers: tournamentId → NodeJS.Timeout
 const turnTimers = new Map<number, ReturnType<typeof setTimeout>>();
+// Tournament formats: tournamentId → GameFormat
+const tournamentFormats = new Map<number, GameFormat>();
+
+function getTurnDuration(tournamentId: number): number {
+  const format = tournamentFormats.get(tournamentId);
+  return (format === '1v1-turbo') ? 10 : 30;
+}
 
 function getPersonalizedState(
   state: gameEngine.GameState,
@@ -41,7 +49,7 @@ function getPersonalizedState(
   };
 }
 
-function broadcastQueueCount(io: Server, format: '1v1' | '5-player'): void {
+function broadcastQueueCount(io: Server, format: GameFormat): void {
   const entries = matchmaking.getQueueEntries(format);
   const count = entries.length;
   for (const entry of entries) {
@@ -75,7 +83,7 @@ function startTurnTimer(
     gameStates.set(tournamentId, newState);
     broadcastGameState(io, newState);
     await advanceIfNeeded(io, tournamentId, newState);
-  }, 30_000);
+  }, getTurnDuration(tournamentId) * 1000);
   turnTimers.set(tournamentId, timer);
 }
 
@@ -117,7 +125,7 @@ async function advanceIfNeeded(
       const currentPlayer = newState.players[newState.currentPlayerIndex];
       io.to(`tournament:${tournamentId}`).emit('game:turn', {
         userId: currentPlayer.userId,
-        timeLeft: 30,
+        timeLeft: getTurnDuration(tournamentId),
       });
       startTurnTimer(io, tournamentId, currentPlayer.userId);
     }
@@ -149,14 +157,29 @@ async function finishHand(
     if (p.chips === 0) p.status = 'eliminated';
   });
 
+  // Bounty: award MMR for eliminations in bounty format
+  const format = tournamentFormats.get(tournamentId);
+  if (format === '5-player-bounty') {
+    const newlyEliminated = newState.players.filter(p => p.chips === 0);
+    if (newlyEliminated.length > 0 && winnerId) {
+      const bountyBonus = newlyEliminated.length * 10;
+      await db.query('UPDATE users SET mmr = GREATEST(0, mmr + $1) WHERE id = $2', [bountyBonus, winnerId]);
+      io.to(`tournament:${tournamentId}`).emit('bounty:kill', {
+        killerId: winnerId,
+        eliminated: newlyEliminated.map(p => p.userId),
+        bonus: bountyBonus,
+      });
+    }
+  }
+
   const stillAlive = newState.players.filter((p) => p.status !== 'eliminated');
 
   if (stillAlive.length <= 1) {
     // Tournament over
     const sorted = [...newState.players].sort((a, b) => b.chips - a.chips);
-    const format = newState.players.length === 2 ? '1v1' : '5-player';
+    const resolvedFormat = tournamentFormats.get(tournamentId) ?? (newState.players.length === 2 ? '1v1' : '5-player');
     const places = sorted.map((p, i) => ({ userId: p.userId, place: i + 1 }));
-    const mmrChanges = calculateMMRChanges(places, format);
+    const mmrChanges = calculateMMRChanges(places, resolvedFormat);
 
     // Save to DB
     await db.query(
@@ -184,6 +207,7 @@ async function finishHand(
     io.to(`tournament:${tournamentId}`).emit('game:end', { places: endPayload });
     gameStates.delete(tournamentId);
     playerNames.delete(tournamentId);
+    tournamentFormats.delete(tournamentId);
   } else {
     // Start next hand
     const nextState = gameEngine.createGameState(
@@ -200,14 +224,14 @@ async function finishHand(
     const currentPlayer = nextState.players[nextState.currentPlayerIndex];
     io.to(`tournament:${tournamentId}`).emit('game:turn', {
       userId: currentPlayer.userId,
-      timeLeft: 30,
+      timeLeft: getTurnDuration(tournamentId),
     });
     startTurnTimer(io, tournamentId, currentPlayer.userId);
   }
 }
 
 async function createTournament(
-  format: '1v1' | '5-player',
+  format: GameFormat,
   players: matchmaking.QueueEntry[]
 ): Promise<number> {
   const result = await db.query<{ id: number }>(
@@ -215,6 +239,7 @@ async function createTournament(
     [format]
   );
   const tournamentId = result.rows[0].id;
+  tournamentFormats.set(tournamentId, format);
   for (const p of players) {
     await db.query(
       'INSERT INTO tournament_players (tournament_id, user_id) VALUES ($1, $2)',
@@ -238,12 +263,12 @@ async function createTournament(
 
 export function initSocketHandler(io: Server, app: FastifyInstance): void {
   // Run matchmaking interval
-  const formats: Array<'1v1' | '5-player'> = ['1v1', '5-player'];
+  const formats: GameFormat[] = ['1v1', '5-player', '1v1-turbo', '5-player-bounty'];
   setInterval(async () => {
     for (const format of formats) {
       const matched = matchmaking.tryMatch(format);
       if (!matched) {
-        if (format === '5-player') broadcastQueueCount(io, '5-player');
+        if (format === '5-player' || format === '5-player-bounty') broadcastQueueCount(io, format);
         continue;
       }
 
@@ -274,7 +299,7 @@ export function initSocketHandler(io: Server, app: FastifyInstance): void {
       const currentPlayer = state.players[state.currentPlayerIndex];
       io.to(`tournament:${tournamentId}`).emit('game:turn', {
         userId: currentPlayer.userId,
-        timeLeft: 30,
+        timeLeft: getTurnDuration(tournamentId),
       });
       startTurnTimer(io, tournamentId, currentPlayer.userId);
     }
@@ -299,15 +324,15 @@ export function initSocketHandler(io: Server, app: FastifyInstance): void {
     const userId = (socket.data as { userId: number }).userId;
     console.log(`[Socket] Connected: user=${userId} socket=${socket.id}`);
 
-    socket.on('join-queue', (data: { format: '1v1' | '5-player'; mmr: number }) => {
+    socket.on('join-queue', (data: { format: GameFormat; mmr: number }) => {
       matchmaking.joinQueue(
         { userId, mmr: data.mmr, joinedAt: new Date(), socketId: socket.id },
         data.format
       );
-      if (data.format === '5-player') broadcastQueueCount(io, '5-player');
+      if (data.format === '5-player' || data.format === '5-player-bounty') broadcastQueueCount(io, data.format);
     });
 
-    socket.on('leave-queue', (data: { format: '1v1' | '5-player' }) => {
+    socket.on('leave-queue', (data: { format: GameFormat }) => {
       matchmaking.leaveQueue(userId, data.format);
     });
 
@@ -346,7 +371,7 @@ export function initSocketHandler(io: Server, app: FastifyInstance): void {
           const currentPlayer = newState.players[newState.currentPlayerIndex];
           io.to(`tournament:${tournamentId}`).emit('game:turn', {
             userId: currentPlayer.userId,
-            timeLeft: 30,
+            timeLeft: getTurnDuration(tournamentId),
           });
           startTurnTimer(io, tournamentId, currentPlayer.userId);
         }

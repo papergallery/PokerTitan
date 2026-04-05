@@ -1,3 +1,5 @@
+export type GameFormat = '1v1' | '5-player' | '1v1-turbo' | '5-player-bounty';
+
 export interface QueueEntry {
   userId: number;
   mmr: number;
@@ -7,12 +9,17 @@ export interface QueueEntry {
 
 const queue1v1: QueueEntry[] = [];
 const queue5player: QueueEntry[] = [];
+const queue1v1turbo: QueueEntry[] = [];
+const queue5playerBounty: QueueEntry[] = [];
 
-function getQueue(format: '1v1' | '5-player'): QueueEntry[] {
-  return format === '1v1' ? queue1v1 : queue5player;
+function getQueue(format: GameFormat): QueueEntry[] {
+  if (format === '1v1') return queue1v1;
+  if (format === '5-player') return queue5player;
+  if (format === '1v1-turbo') return queue1v1turbo;
+  return queue5playerBounty;
 }
 
-function logQueue(format: '1v1' | '5-player'): void {
+function logQueue(format: GameFormat): void {
   const queue = getQueue(format);
   if (queue.length === 0) return;
   const entries = queue.map(
@@ -21,7 +28,7 @@ function logQueue(format: '1v1' | '5-player'): void {
   console.log(`[MM] Queue ${format} (${queue.length}):\n${entries.join('\n')}`);
 }
 
-export function joinQueue(entry: QueueEntry, format: '1v1' | '5-player'): void {
+export function joinQueue(entry: QueueEntry, format: GameFormat): void {
   const queue = getQueue(format);
   const existing = queue.find((e) => e.userId === entry.userId);
   if (existing) {
@@ -38,7 +45,7 @@ export function joinQueue(entry: QueueEntry, format: '1v1' | '5-player'): void {
   }
 }
 
-export function leaveQueue(userId: number, format: '1v1' | '5-player'): void {
+export function leaveQueue(userId: number, format: GameFormat): void {
   const queue = getQueue(format);
   const idx = queue.findIndex((e) => e.userId === userId);
   if (idx !== -1) {
@@ -50,19 +57,21 @@ export function leaveQueue(userId: number, format: '1v1' | '5-player'): void {
 export function leaveAllQueues(userId: number): void {
   leaveQueue(userId, '1v1');
   leaveQueue(userId, '5-player');
+  leaveQueue(userId, '1v1-turbo');
+  leaveQueue(userId, '5-player-bounty');
 }
 
-export function getQueueSize(format: '1v1' | '5-player'): number {
+export function getQueueSize(format: GameFormat): number {
   return getQueue(format).length;
 }
 
-export function getQueueEntries(format: '1v1' | '5-player'): QueueEntry[] {
+export function getQueueEntries(format: GameFormat): QueueEntry[] {
   return [...getQueue(format)];
 }
 
-export function tryMatch(format: '1v1' | '5-player'): QueueEntry[] | null {
+export function tryMatch(format: GameFormat): QueueEntry[] | null {
   const queue = getQueue(format);
-  const needed = format === '1v1' ? 2 : 5;
+  const needed = (format === '1v1' || format === '1v1-turbo') ? 2 : 5;
 
   if (queue.length < needed) return null;
 
