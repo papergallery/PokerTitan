@@ -33,24 +33,24 @@ export default function LobbyPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-9 py-6 border-b border-border">
         <span className="text-2xl font-bold text-white">PokerTitan</span>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
           <button
             onClick={() => navigate(`/profile/${user.id}`)}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           >
-            <Avatar name={user.name} avatarUrl={user.avatarUrl} size="md" />
-            <span className="text-white text-base font-medium">{user.name}</span>
+            <Avatar name={user.name} avatarUrl={user.avatarUrl} size="lg" />
+            <span className="text-white text-lg font-medium">{user.name}</span>
           </button>
           <MMRBadge mmr={user.mmr} />
           <button
             onClick={() => navigate('/shop')}
-            className="text-muted text-base hover:text-white transition-colors"
+            className="text-muted text-lg hover:text-white transition-colors"
           >
             Магазин
           </button>
           <button
             onClick={() => logoutMutation.mutate()}
-            className="text-muted text-base hover:text-white transition-colors"
+            className="text-muted text-lg hover:text-white transition-colors"
           >
             Выйти
           </button>
