@@ -27,7 +27,7 @@ export async function userRoutes(app: FastifyInstance): Promise<void> {
     if (isNaN(id)) return reply.code(400).send({ error: 'Invalid id' });
 
     const result = await db.query(
-      'SELECT id, email, name, avatar_url, mmr FROM users WHERE id = $1',
+      'SELECT id, email, name, avatar_url as "avatarUrl", mmr FROM users WHERE id = $1',
       [id]
     );
     if (result.rows.length === 0) return reply.code(404).send({ error: 'User not found' });
