@@ -262,6 +262,15 @@ export function initSocketHandler(io: Server, app: FastifyInstance): void {
       matchmaking.leaveQueue(userId, data.format);
     });
 
+    socket.on('game:ready', (data: { tournamentId: number }) => {
+      const state = gameStates.get(data.tournamentId);
+      if (!state) return;
+      const isPlayer = state.players.some((p) => p.userId === userId);
+      if (!isPlayer) return;
+      socket.join(`tournament:${data.tournamentId}`);
+      socket.emit('game:state', getPersonalizedState(state, userId));
+    });
+
     socket.on(
       'game:action',
       async (data: { action: 'fold' | 'check' | 'call' | 'raise'; amount?: number }) => {
