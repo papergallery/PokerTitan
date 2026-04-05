@@ -46,12 +46,13 @@ export default function ShopPage() {
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-white mb-3">Навсегда</h3>
                 <ul className="space-y-2 text-sm text-muted mb-6">
-                  <li className="flex items-center gap-2"><span className="text-accent">✓</span> Расширенная статистика: винрейт, график MMR, любимые действия</li>
-                  <li className="flex items-center gap-2"><span className="text-accent">✓</span> Уникальная эксклюзивная аватарка</li>
-                  <li className="flex items-center gap-2"><span className="text-accent">✓</span> Значок Premium в профиле</li>
+                  <li className="flex items-center gap-2"><span className="text-accent">✓</span> Золотой никнейм за столом и в лобби</li>
+                  <li className="flex items-center gap-2"><span className="text-accent">✓</span> Расширенная статистика: график MMR, винрейт, история рук</li>
+                  <li className="flex items-center gap-2"><span className="text-accent">✓</span> Эксклюзивная рамка для аватара</li>
+                  <li className="flex items-center gap-2"><span className="text-accent">✓</span> Доступ к закрытым форматам игры</li>
                 </ul>
                 <p className="text-xs text-muted">
-                  После оплаты Premium-статус активируется мгновенно и отображается в вашем профиле. Уникальная аватарка станет доступна в разделе «Аватар» в настройках профиля.
+                  После оплаты Premium-статус активируется мгновенно. Рамка, золотой никнейм и расширенная статистика становятся доступны сразу в профиле.
                 </p>
               </div>
               <div className="sm:text-right">
