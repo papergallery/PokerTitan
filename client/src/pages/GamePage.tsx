@@ -14,7 +14,7 @@ export default function GamePage() {
   const myPlayer = gameState?.players.find(p => p.userId === gameState.myUserId)
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden relative">
+    <div className="h-[100dvh] flex flex-col overflow-hidden relative">
       {/* Game table */}
       <div className="flex-1 min-h-0 w-full">
         {gameState ? (
@@ -27,7 +27,7 @@ export default function GamePage() {
       {/* Action panel */}
       <AnimatePresence>
         {isMyTurn && myPlayer && gameState && (
-          <div className="p-3 pb-safe w-full max-w-lg mx-auto">
+          <div className="p-3 pb-6 w-full max-w-lg mx-auto">
             <ActionPanel
               currentBet={gameState.currentBet}
               myChips={myPlayer.chips}

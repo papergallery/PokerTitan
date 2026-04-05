@@ -53,13 +53,15 @@ export function createGameState(
   const bbIndex = (dealerIndex + 2) % gamePlayers.length;
 
   // Post blinds
-  gamePlayers[sbIndex].chips -= SMALL_BLIND;
+  gamePlayers[sbIndex].chips -= Math.min(SMALL_BLIND, gamePlayers[sbIndex].chips);
   gamePlayers[sbIndex].bet = SMALL_BLIND;
   gamePlayers[sbIndex].totalBet = SMALL_BLIND;
+  if (gamePlayers[sbIndex].chips === 0) gamePlayers[sbIndex].status = 'all-in';
 
-  gamePlayers[bbIndex].chips -= BIG_BLIND;
+  gamePlayers[bbIndex].chips -= Math.min(BIG_BLIND, gamePlayers[bbIndex].chips);
   gamePlayers[bbIndex].bet = BIG_BLIND;
   gamePlayers[bbIndex].totalBet = BIG_BLIND;
+  if (gamePlayers[bbIndex].chips === 0) gamePlayers[bbIndex].status = 'all-in';
 
   const firstToAct = (bbIndex + 1) % gamePlayers.length;
 

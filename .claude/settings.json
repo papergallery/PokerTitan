@@ -1,5 +1,14 @@
 {
   "permissions": {
-    "defaultMode": "bypassPermissions"
-  }
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Bash",
+      "Write",
+      "Edit",
+      "Read",
+      "Glob",
+      "Grep"
+    ]
+  },
+  "skipDangerousModePermissionPrompt": true
 }
