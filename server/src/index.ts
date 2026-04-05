@@ -57,7 +57,12 @@ async function main() {
   await app.register(userRoutes);
   await app.register(matchmakingRoutes);
 
-  app.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
+  app.get('/health', async () => ({
+    status: 'ok',
+    uptime: process.uptime(),
+    version: process.env.npm_package_version ?? '0.1.0',
+    timestamp: new Date().toISOString(),
+  }));
 
   // Create HTTP server for Socket.io
   const httpServer = createServer(app.server);
