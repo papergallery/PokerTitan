@@ -7,60 +7,50 @@ interface PokerTableProps {
   timeLeft: number
 }
 
-// Position players around an oval using polar coordinates
-function getPlayerPosition(index: number, total: number): { top: string; left: string } {
-  const angle = (index / total) * 2 * Math.PI - Math.PI / 2
-  const rx = 42  // horizontal radius %
-  const ry = 38  // vertical radius %
-  const top = 50 + ry * Math.sin(angle)
-  const left = 50 + rx * Math.cos(angle)
-  return { top: `${top}%`, left: `${left}%` }
-}
-
 export function PokerTable({ gameState, timeLeft }: PokerTableProps) {
   const { players, communityCards, pot, currentPlayerId, myUserId } = gameState
-  const total = players.length
+
+  const me = players.find(p => p.userId === myUserId)
+  const opponents = players.filter(p => p.userId !== myUserId)
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      {/* Table felt */}
-      <div
-        className="relative rounded-[50%] shadow-2xl border-4 border-[#0f2a1a]"
-        style={{
-          width: '70vmin',
-          height: '45vmin',
-          backgroundColor: '#1a3a2a',
-        }}
-      >
-        {/* Center: community cards + pot */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-          <CommunityCards cards={communityCards} />
-          {pot > 0 && (
-            <span className="text-yellow-400 font-semibold text-sm">
-              Pot: {pot} 🪙
-            </span>
-          )}
-        </div>
+    <div className="w-full h-full flex flex-col items-center justify-between gap-3 px-2 py-2">
+      {/* Opponents (everyone except me) */}
+      <div className="flex gap-4 justify-center w-full flex-wrap">
+        {opponents.map(player => (
+          <PlayerSeat
+            key={player.userId}
+            player={player}
+            isCurrentTurn={player.userId === currentPlayerId}
+            isMe={false}
+            timeLeft={player.userId === currentPlayerId ? timeLeft : 30}
+            size="sm"
+          />
+        ))}
       </div>
 
-      {/* Players positioned around the table */}
-      {players.map((player, index) => {
-        const pos = getPlayerPosition(index, total)
-        return (
-          <div
-            key={player.userId}
-            className="absolute transform -translate-x-1/2 -translate-y-1/2"
-            style={{ top: pos.top, left: pos.left }}
-          >
-            <PlayerSeat
-              player={player}
-              isCurrentTurn={player.userId === currentPlayerId}
-              isMe={player.userId === myUserId}
-              timeLeft={player.userId === currentPlayerId ? timeLeft : 30}
-            />
-          </div>
-        )
-      })}
+      {/* Table center: community cards + pot */}
+      <div className="flex flex-col items-center gap-2 bg-[#1a3a2a] rounded-2xl px-4 py-3 w-full max-w-sm border border-[#0f2a1a]">
+        <CommunityCards cards={communityCards} />
+        {pot > 0 && (
+          <span className="text-yellow-400 font-semibold text-sm">
+            Пот: {pot} 🪙
+          </span>
+        )}
+      </div>
+
+      {/* Me */}
+      <div className="flex justify-center w-full">
+        {me && (
+          <PlayerSeat
+            player={me}
+            isCurrentTurn={me.userId === currentPlayerId}
+            isMe={true}
+            timeLeft={me.userId === currentPlayerId ? timeLeft : 30}
+            size="lg"
+          />
+        )}
+      </div>
     </div>
   )
 }

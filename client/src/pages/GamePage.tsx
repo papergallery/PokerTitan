@@ -14,20 +14,20 @@ export default function GamePage() {
   const myPlayer = gameState?.players.find(p => p.userId === gameState.myUserId)
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between py-4 px-4 relative">
+    <div className="h-screen flex flex-col overflow-hidden relative">
       {/* Game table */}
-      <div className="flex-1 w-full flex items-center justify-center">
+      <div className="flex-1 min-h-0 w-full">
         {gameState ? (
           <PokerTable gameState={gameState} timeLeft={timeLeft} />
         ) : (
-          <p className="text-muted">Загрузка игры...</p>
+          <p className="text-muted flex items-center justify-center h-full">Загрузка игры...</p>
         )}
       </div>
 
       {/* Action panel */}
       <AnimatePresence>
         {isMyTurn && myPlayer && gameState && (
-          <div className="w-full max-w-lg">
+          <div className="p-3 pb-safe w-full max-w-lg mx-auto">
             <ActionPanel
               currentBet={gameState.currentBet}
               myChips={myPlayer.chips}
