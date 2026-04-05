@@ -34,8 +34,13 @@ export default function LobbyPage() {
       <header className="flex items-center justify-between px-6 py-4 border-b border-border">
         <span className="text-xl font-bold text-white">PokerTitan</span>
         <div className="flex items-center gap-3">
-          <Avatar name={user.name} avatarUrl={user.avatarUrl} size="sm" />
-          <span className="text-white text-sm font-medium">{user.name}</span>
+          <button
+            onClick={() => navigate(`/profile/${user.id}`)}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <Avatar name={user.name} avatarUrl={user.avatarUrl} size="sm" />
+            <span className="text-white text-sm font-medium">{user.name}</span>
+          </button>
           <MMRBadge mmr={user.mmr} size="sm" />
           <button
             onClick={() => logoutMutation.mutate()}
