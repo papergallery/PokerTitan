@@ -3,7 +3,6 @@ import fastifyCookie from '@fastify/cookie';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
 import fastifyOauth2 from '@fastify/oauth2';
-import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import dotenv from 'dotenv';
 
@@ -64,9 +63,9 @@ async function main() {
     timestamp: new Date().toISOString(),
   }));
 
-  // Create HTTP server for Socket.io
-  const httpServer = createServer(app.server);
-  const io = new SocketIOServer(httpServer, {
+  await app.ready();
+
+  const io = new SocketIOServer(app.server, {
     cors: { origin: CLIENT_URL, credentials: true },
   });
 
@@ -74,7 +73,12 @@ async function main() {
 
   await runMigrations();
 
-  await app.listen({ port: PORT, host: '0.0.0.0' });
+  await new Promise<void>((resolve, reject) => {
+    app.server.listen(PORT, '0.0.0.0', (err?: Error) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
   console.log(`Server running on port ${PORT}`);
 }
 
