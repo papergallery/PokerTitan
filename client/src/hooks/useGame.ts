@@ -18,8 +18,10 @@ export function useGame(tournamentId: number | null) {
     socket.on('game:state', (state: GameState) => setGameState(state))
     socket.on('game:result', (result: GameResult) => setLastResult(result))
     socket.on('game:end', (end: GameEnd) => {
-      setGameEnd(end)
-      queryClient.invalidateQueries({ queryKey: ['me'] })
+      setTimeout(() => {
+        setGameEnd(end)
+        queryClient.invalidateQueries({ queryKey: ['me'] })
+      }, 5000)
     })
     socket.on('game:turn', (data: { userId: number; timeLeft: number }) => {
       if (timerRef.current) clearInterval(timerRef.current)
