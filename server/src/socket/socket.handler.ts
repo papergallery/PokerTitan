@@ -22,6 +22,8 @@ function getPersonalizedState(
   return {
     ...state,
     deck: undefined, // never send deck to clients
+    currentPlayerId: state.players[state.currentPlayerIndex]?.userId,
+    myUserId: userId,
     players: state.players.map((p) => ({
       ...p,
       cards:
