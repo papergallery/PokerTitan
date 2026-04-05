@@ -207,10 +207,16 @@ export function determineWinner(
 
 export function isBettingRoundOver(state: GameState): boolean {
   const active = state.players.filter((p) => p.status === 'active');
-  if (active.length <= 1) return true;
-  // All active players have matched the current bet and everyone has acted
+  const canParticipate = state.players.filter(
+    (p) => p.status === 'active' || p.status === 'all-in'
+  );
+
+  // All players are all-in — auto-progress
+  if (active.length === 0) return true;
+
+  // All active players have matched the current bet AND all participants have acted at least once
   const allMatched = active.every((p) => p.bet === state.currentBet);
-  return allMatched && state.actionsThisRound >= active.length;
+  return allMatched && state.actionsThisRound >= canParticipate.length;
 }
 
 export function isHandOver(state: GameState): boolean {
