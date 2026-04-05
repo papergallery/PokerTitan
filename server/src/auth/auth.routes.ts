@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest } from 'fastify';
 import * as authService from './auth.service';
 
 const COOKIE_NAME = 'token';
@@ -63,7 +63,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.get('/auth/google/callback', async (req, reply) => {
     try {
       const tokenResponse = await (app as FastifyInstance & {
-        googleOAuth2: { getAccessTokenFromAuthorizationCodeFlow: (req: typeof req) => Promise<{ token: { access_token: string } }> }
+        googleOAuth2: { getAccessTokenFromAuthorizationCodeFlow: (req: FastifyRequest) => Promise<{ token: { access_token: string } }> }
       }).googleOAuth2.getAccessTokenFromAuthorizationCodeFlow(req);
 
       const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {

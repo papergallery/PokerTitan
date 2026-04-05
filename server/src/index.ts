@@ -46,6 +46,11 @@ async function main() {
       startRedirectPath: '/auth/google',
       callbackUri: `http://localhost:${PORT}/auth/google/callback`,
     });
+  } else {
+    // Stub route when Google credentials are not configured
+    app.get('/auth/google', async (_req, reply) => {
+      return reply.code(503).send({ error: 'Google OAuth is not configured on this server' });
+    });
   }
 
   await app.register(authRoutes);
