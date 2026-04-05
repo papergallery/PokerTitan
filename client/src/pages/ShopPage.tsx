@@ -40,11 +40,13 @@ export default function ShopPage() {
         {/* Premium Account */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-white mb-6">Премиум-аккаунт</h2>
-          <div className="bg-[#1a1a1a] border border-amber-500/50 rounded-2xl p-6 sm:p-8 relative overflow-hidden">
-            <div className="absolute top-4 right-4 bg-amber-500 text-black text-xs font-bold px-2 py-1 rounded-full">PREMIUM</div>
+          <div className="bg-[#1a1a1a] border border-amber-500/50 rounded-2xl p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-start gap-6">
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-white mb-3">Навсегда</h3>
+                <div className="flex items-center gap-3 mb-3">
+                  <h3 className="text-xl font-bold text-white">Навсегда</h3>
+                  <span className="bg-amber-500 text-black text-xs font-bold px-2 py-1 rounded-full">PREMIUM</span>
+                </div>
                 <ul className="space-y-2 text-sm text-muted mb-6">
                   <li className="flex items-center gap-2"><span className="text-accent">✓</span> Золотой никнейм за столом и в лобби</li>
                   <li className="flex items-center gap-2"><span className="text-accent">✓</span> Расширенная статистика: график MMR, винрейт, история рук</li>
