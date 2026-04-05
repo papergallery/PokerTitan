@@ -88,15 +88,28 @@ async function advanceIfNeeded(
     return;
   }
   if (gameEngine.isBettingRoundOver(state)) {
-    const newState = gameEngine.advanceStage(state);
+    let newState = gameEngine.advanceStage(state);
     gameStates.set(tournamentId, newState);
     broadcastGameState(io, newState);
+
+    // If all remaining players are all-in, auto-advance stages until showdown
+    while (
+      newState.stage !== 'showdown' &&
+      newState.players.filter((p) => p.status === 'active').length === 0
+    ) {
+      newState = gameEngine.advanceStage(newState);
+      gameStates.set(tournamentId, newState);
+      broadcastGameState(io, newState);
+    }
 
     if (newState.stage === 'showdown') {
       await finishHand(io, tournamentId, newState);
     } else {
       const currentPlayer = newState.players[newState.currentPlayerIndex];
-      io.emit('game:turn', { userId: currentPlayer.userId, timeLeft: 30 });
+      io.to(`tournament:${tournamentId}`).emit('game:turn', {
+        userId: currentPlayer.userId,
+        timeLeft: 30,
+      });
       startTurnTimer(io, tournamentId, currentPlayer.userId);
     }
   }
