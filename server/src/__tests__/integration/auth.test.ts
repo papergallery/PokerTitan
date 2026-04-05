@@ -14,7 +14,7 @@ const mockUser = {
   id: 1,
   email: 'test@example.com',
   name: 'Test User',
-  avatar_url: null,
+  avatarUrl: null,
   mmr: 1000,
 }
 
