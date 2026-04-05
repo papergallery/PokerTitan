@@ -19,12 +19,14 @@ export function useGame(tournamentId: number | null) {
       setTimeLeft(data.timeLeft)
     })
 
+    socket.emit('game:ready', { tournamentId })
+
     return () => {
       socket.off('game:state')
       socket.off('game:result')
       socket.off('game:end')
       socket.off('game:turn')
-      socket.disconnect()
+      // не вызываем socket.disconnect() — сокет singleton
     }
   }, [tournamentId])
 
