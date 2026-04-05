@@ -41,6 +41,15 @@ function getPersonalizedState(
   };
 }
 
+function broadcastQueueCount(io: Server, format: '1v1' | '5-player'): void {
+  const entries = matchmaking.getQueueEntries(format);
+  const count = entries.length;
+  for (const entry of entries) {
+    const socket = io.sockets.sockets.get(entry.socketId);
+    if (socket) socket.emit('queue:count', { format, count });
+  }
+}
+
 function broadcastGameState(io: Server, state: gameEngine.GameState): void {
   for (const player of state.players) {
     const sockets = io.sockets.sockets;
@@ -233,7 +242,10 @@ export function initSocketHandler(io: Server, app: FastifyInstance): void {
   setInterval(async () => {
     for (const format of formats) {
       const matched = matchmaking.tryMatch(format);
-      if (!matched) continue;
+      if (!matched) {
+        if (format === '5-player') broadcastQueueCount(io, '5-player');
+        continue;
+      }
 
       const tournamentId = await createTournament(format, matched);
       const state = gameEngine.createGameState(
@@ -292,6 +304,7 @@ export function initSocketHandler(io: Server, app: FastifyInstance): void {
         { userId, mmr: data.mmr, joinedAt: new Date(), socketId: socket.id },
         data.format
       );
+      if (data.format === '5-player') broadcastQueueCount(io, '5-player');
     });
 
     socket.on('leave-queue', (data: { format: '1v1' | '5-player' }) => {

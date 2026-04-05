@@ -3,9 +3,10 @@ import { motion } from 'framer-motion'
 interface MatchmakingSearchProps {
   format: '1v1' | '5-player'
   elapsed: number
+  queueCount?: number
 }
 
-export function MatchmakingSearch({ format, elapsed }: MatchmakingSearchProps) {
+export function MatchmakingSearch({ format, elapsed, queueCount = 1 }: MatchmakingSearchProps) {
   const mins = Math.floor(elapsed / 60).toString().padStart(2, '0')
   const secs = (elapsed % 60).toString().padStart(2, '0')
 
@@ -32,6 +33,11 @@ export function MatchmakingSearch({ format, elapsed }: MatchmakingSearchProps) {
         <p className="text-muted text-base mt-2">
           {format === '1v1' ? '1 на 1' : 'Турнир 5 игроков'} · {mins}:{secs}
         </p>
+        {format === '5-player' && (
+          <p className="text-accent text-sm font-medium mt-3">
+            {queueCount} / 5 игроков в очереди
+          </p>
+        )}
       </div>
     </div>
   )

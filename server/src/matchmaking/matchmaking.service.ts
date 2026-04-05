@@ -52,6 +52,14 @@ export function leaveAllQueues(userId: number): void {
   leaveQueue(userId, '5-player');
 }
 
+export function getQueueSize(format: '1v1' | '5-player'): number {
+  return getQueue(format).length;
+}
+
+export function getQueueEntries(format: '1v1' | '5-player'): QueueEntry[] {
+  return [...getQueue(format)];
+}
+
 export function tryMatch(format: '1v1' | '5-player'): QueueEntry[] | null {
   const queue = getQueue(format);
   const needed = format === '1v1' ? 2 : 5;

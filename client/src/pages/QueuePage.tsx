@@ -12,6 +12,7 @@ export default function QueuePage() {
   const { user } = useAuth()
   const format = (location.state as { format?: '1v1' | '5-player' })?.format ?? '1v1'
   const [elapsed, setElapsed] = useState(0)
+  const [queueCount, setQueueCount] = useState(1)
 
   useEffect(() => {
     socket.connect()
@@ -23,10 +24,15 @@ export default function QueuePage() {
       navigate(`/game/${data.tournamentId}`)
     })
 
+    socket.on('queue:count', (data: { format: string; count: number }) => {
+      if (data.format === format) setQueueCount(data.count)
+    })
+
     const timer = setInterval(() => setElapsed(e => e + 1), 1000)
 
     return () => {
       socket.off('matchmaking:found')
+      socket.off('queue:count')
       clearInterval(timer)
     }
   }, [format, navigate, user])
@@ -39,7 +45,7 @@ export default function QueuePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-8">
-      <MatchmakingSearch format={format} elapsed={elapsed} />
+      <MatchmakingSearch format={format} elapsed={elapsed} queueCount={queueCount} />
       <Button variant="secondary" onClick={handleCancel}>
         Отмена
       </Button>
