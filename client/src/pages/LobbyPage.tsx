@@ -43,6 +43,12 @@ export default function LobbyPage() {
           </button>
           <MMRBadge mmr={user.mmr} />
           <button
+            onClick={() => navigate('/shop')}
+            className="text-muted text-base hover:text-white transition-colors"
+          >
+            Магазин
+          </button>
+          <button
             onClick={() => logoutMutation.mutate()}
             className="text-muted text-base hover:text-white transition-colors"
           >
