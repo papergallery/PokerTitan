@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useGame } from '../hooks/useGame'
 import { PokerTable } from '../components/game/PokerTable'
 import { ActionPanel } from '../components/game/ActionPanel'
-import { Button } from '../components/ui/Button'
 import { socket } from '../lib/socket'
 
 export default function GamePage() {
@@ -38,36 +37,82 @@ export default function GamePage() {
   const myPlayer = gameState?.players.find(p => p.userId === gameState.myUserId)
 
   return (
-    <div className="h-[100dvh] flex flex-col overflow-hidden relative">
+    <div
+      style={{
+        height: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        position: 'relative',
+        background: '#0a0a0a',
+        fontFamily: "'JetBrains Mono', monospace",
+      }}
+    >
       {/* Bounty toast */}
       {bountyMsg && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-black font-bold px-4 py-2 rounded-xl shadow-lg animate-bounce">
-          💀 {bountyMsg}
+        <div
+          style={{
+            position: 'fixed',
+            top: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 50,
+            background: '#d4af37',
+            color: '#0a0a0a',
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: '18px',
+            letterSpacing: '0.1em',
+            padding: '10px 24px',
+            boxShadow: '0 0 20px #d4af3766',
+          }}
+        >
+          {bountyMsg}
         </div>
       )}
 
       {/* Game table */}
-      <div className="flex-1 min-h-0 w-full">
+      <div style={{ flex: 1, minHeight: 0, width: '100%' }}>
         {gameState ? (
           <>
             {isTurbo && (
-              <div className="flex justify-center mb-2">
-                <span className="bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse">
-                  ⚡ TURBO · 10 сек
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                <span
+                  style={{
+                    background: '#c41e3a',
+                    color: '#f5f0e8',
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: '14px',
+                    letterSpacing: '0.15em',
+                    padding: '4px 16px',
+                  }}
+                >
+                  TURBO · 10 СЕК
                 </span>
               </div>
             )}
             <PokerTable gameState={gameState} timeLeft={timeLeft} />
           </>
         ) : (
-          <p className="text-muted flex items-center justify-center h-full">Загрузка игры...</p>
+          <p
+            style={{
+              color: '#555',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              fontSize: '12px',
+              letterSpacing: '0.2em',
+            }}
+          >
+            ЗАГРУЗКА ИГРЫ...
+          </p>
         )}
       </div>
 
       {/* Action panel */}
       <AnimatePresence>
         {isMyTurn && myPlayer && gameState && (
-          <div className="p-3 pb-6 w-full max-w-lg mx-auto">
+          <div style={{ padding: '12px 12px 24px', width: '100%', maxWidth: '512px', margin: '0 auto' }}>
             <ActionPanel
               currentBet={gameState.currentBet}
               myChips={myPlayer.chips}
@@ -84,27 +129,77 @@ export default function GamePage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="absolute inset-0 bg-black/70 flex items-center justify-center z-50"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(0,0,0,0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 50,
+            }}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-surface rounded-2xl p-8 border border-border w-full max-w-sm"
+              style={{
+                background: '#111',
+                border: '1px solid #2a2a2a',
+                padding: '40px 32px',
+                width: '100%',
+                maxWidth: '380px',
+              }}
             >
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">Турнир завершён</h2>
-              <div className="flex flex-col gap-2 mb-6">
+              <div
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontSize: '28px',
+                  letterSpacing: '0.1em',
+                  color: '#f5f0e8',
+                  textAlign: 'center',
+                  marginBottom: '24px',
+                }}
+              >
+                ТУРНИР ЗАВЕРШЁН
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
                 {gameEnd.places.map(p => (
-                  <div key={p.userId} className="flex items-center justify-between">
-                    <span className="text-muted">#{p.place} {p.name}</span>
-                    <span className={p.mmrChange >= 0 ? 'text-accent font-semibold' : 'text-red-400 font-semibold'}>
+                  <div key={p.userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ color: '#999', fontSize: '13px', letterSpacing: '0.05em' }}>
+                      #{p.place} {p.name}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: '18px',
+                        letterSpacing: '0.05em',
+                        color: p.mmrChange >= 0 ? '#c41e3a' : '#555',
+                      }}
+                    >
                       {p.mmrChange >= 0 ? '+' : ''}{p.mmrChange} MMR
                     </span>
                   </div>
                 ))}
               </div>
-              <Button className="w-full" onClick={() => navigate('/lobby')}>
-                В лобби
-              </Button>
+              <button
+                onClick={() => navigate('/lobby')}
+                style={{
+                  width: '100%',
+                  padding: '16px 0',
+                  background: '#c41e3a',
+                  border: '1px solid #c41e3a',
+                  color: '#f5f0e8',
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontSize: '20px',
+                  letterSpacing: '0.2em',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#a01830')}
+                onMouseLeave={e => (e.currentTarget.style.background = '#c41e3a')}
+              >
+                В ЛОББИ
+              </button>
             </motion.div>
           </motion.div>
         )}

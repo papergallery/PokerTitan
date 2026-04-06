@@ -32,7 +32,8 @@ export default function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/lobby" element={<PrivateRoute><LobbyPage /></PrivateRoute>} />
+      <Route path="/lobby" element={<PrivateRoute><LobbyPage2 /></PrivateRoute>} />
+      <Route path="/lobby-old" element={<PrivateRoute><LobbyPage /></PrivateRoute>} />
       <Route path="/lobby2" element={<PrivateRoute><LobbyPage2 /></PrivateRoute>} />
       <Route path="/lobby3" element={<PrivateRoute><LobbyPage3 /></PrivateRoute>} />
       <Route path="/lobby4" element={<PrivateRoute><LobbyPage4 /></PrivateRoute>} />

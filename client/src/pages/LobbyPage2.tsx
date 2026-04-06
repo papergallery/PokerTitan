@@ -336,7 +336,7 @@ export default function LobbyPage2() {
           <div
             style={{
               marginTop: '8px',
-              color: '#444',
+              color: '#888',
               fontSize: '11px',
               letterSpacing: '0.25em',
             }}
@@ -435,7 +435,7 @@ export default function LobbyPage2() {
                     style={{
                       fontSize: '10px',
                       letterSpacing: '0.3em',
-                      color: isSelected ? f.accentColor : '#555',
+                      color: isSelected ? f.accentColor : '#999',
                       marginBottom: '16px',
                       transition: 'color 0.2s',
                       fontWeight: 700,
@@ -462,7 +462,7 @@ export default function LobbyPage2() {
                   <div
                     style={{
                       fontSize: '12px',
-                      color: isSelected ? '#888' : '#444',
+                      color: isSelected ? '#aaa' : '#888',
                       letterSpacing: '0.05em',
                       marginBottom: '20px',
                       transition: 'color 0.2s',
@@ -485,7 +485,7 @@ export default function LobbyPage2() {
                   <div
                     style={{
                       fontSize: '12px',
-                      color: '#666',
+                      color: '#aaa',
                       lineHeight: 1.7,
                       letterSpacing: '0.02em',
                       marginBottom: '20px',
@@ -506,7 +506,7 @@ export default function LobbyPage2() {
                       style={{
                         fontSize: '10px',
                         letterSpacing: '0.15em',
-                        color: '#777',
+                        color: '#999',
                         fontWeight: 700,
                       }}
                     >
@@ -582,7 +582,7 @@ export default function LobbyPage2() {
                 style={{
                   fontSize: '11px',
                   letterSpacing: '0.2em',
-                  color: '#333',
+                  color: '#777',
                 }}
               >
                 ↑ ВЫБЕРИТЕ ФОРМАТ ВЫШЕ
@@ -598,8 +598,8 @@ export default function LobbyPage2() {
               width: '100%',
               padding: '18px 0',
               background: selected && !loading ? '#c41e3a' : 'transparent',
-              border: `1px solid ${selected && !loading ? '#c41e3a' : '#222'}`,
-              color: selected && !loading ? '#f5f0e8' : '#333',
+              border: `1px solid ${selected && !loading ? '#c41e3a' : '#333'}`,
+              color: selected && !loading ? '#f5f0e8' : '#555',
               fontFamily: "'Bebas Neue', sans-serif",
               fontSize: '22px',
               letterSpacing: '0.2em',
