@@ -4,6 +4,7 @@ import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import LobbyPage from './pages/LobbyPage'
+import LobbyPage2 from './pages/LobbyPage2'
 import QueuePage from './pages/QueuePage'
 import GamePage from './pages/GamePage'
 import ProfilePage from './pages/ProfilePage'
@@ -30,6 +31,7 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/lobby" element={<PrivateRoute><LobbyPage /></PrivateRoute>} />
+      <Route path="/lobby2" element={<PrivateRoute><LobbyPage2 /></PrivateRoute>} />
       <Route path="/queue" element={<PrivateRoute><QueuePage /></PrivateRoute>} />
       <Route path="/game/:id" element={<PrivateRoute><GamePage /></PrivateRoute>} />
       <Route path="/profile/:id" element={<ProfilePage />} />
