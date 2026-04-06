@@ -377,16 +377,16 @@ export default function LobbyPage2() {
                     background: isSelected
                       ? '#120a0a'
                       : isHovered && !locked
-                      ? '#0f0f0f'
-                      : '#0d0d0d',
+                      ? '#141414'
+                      : '#111',
                     border: `1px solid ${
                       isSelected
                         ? f.id === '1v1-turbo' || f.id === '5-player-bounty'
                           ? '#d4af3766'
                           : '#c41e3a66'
                         : isHovered && !locked
-                        ? '#2a2a2a'
-                        : '#181818'
+                        ? '#3a3a3a'
+                        : '#2a2a2a'
                     }`,
                     cursor: locked ? 'not-allowed' : 'pointer',
                     padding: '32px 28px',
@@ -421,7 +421,7 @@ export default function LobbyPage2() {
                       right: '20px',
                       fontFamily: "'Bebas Neue', sans-serif",
                       fontSize: '56px',
-                      color: isSelected ? f.accentColor + '22' : '#1a1a1a',
+                      color: isSelected ? f.accentColor + '22' : '#2e2e2e',
                       lineHeight: 1,
                       transition: 'color 0.3s',
                       userSelect: 'none',
@@ -435,7 +435,7 @@ export default function LobbyPage2() {
                     style={{
                       fontSize: '10px',
                       letterSpacing: '0.3em',
-                      color: isSelected ? f.accentColor : '#333',
+                      color: isSelected ? f.accentColor : '#555',
                       marginBottom: '16px',
                       transition: 'color 0.2s',
                       fontWeight: 700,
@@ -475,7 +475,7 @@ export default function LobbyPage2() {
                   <div
                     style={{
                       height: '1px',
-                      background: isSelected ? f.accentColor + '33' : '#1e1e1e',
+                      background: isSelected ? f.accentColor + '33' : '#2a2a2a',
                       marginBottom: '16px',
                       transition: 'background 0.2s',
                     }}
@@ -506,7 +506,7 @@ export default function LobbyPage2() {
                       style={{
                         fontSize: '10px',
                         letterSpacing: '0.15em',
-                        color: '#555',
+                        color: '#777',
                         fontWeight: 700,
                       }}
                     >
