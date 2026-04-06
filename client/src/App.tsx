@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage'
 import LobbyPage from './pages/LobbyPage'
 import LobbyPage2 from './pages/LobbyPage2'
 import LobbyPage3 from './pages/LobbyPage3'
+import LobbyPage4 from './pages/LobbyPage4'
 import QueuePage from './pages/QueuePage'
 import GamePage from './pages/GamePage'
 import ProfilePage from './pages/ProfilePage'
@@ -34,6 +35,7 @@ export default function App() {
       <Route path="/lobby" element={<PrivateRoute><LobbyPage /></PrivateRoute>} />
       <Route path="/lobby2" element={<PrivateRoute><LobbyPage2 /></PrivateRoute>} />
       <Route path="/lobby3" element={<PrivateRoute><LobbyPage3 /></PrivateRoute>} />
+      <Route path="/lobby4" element={<PrivateRoute><LobbyPage4 /></PrivateRoute>} />
       <Route path="/queue" element={<PrivateRoute><QueuePage /></PrivateRoute>} />
       <Route path="/game/:id" element={<PrivateRoute><GamePage /></PrivateRoute>} />
       <Route path="/profile/:id" element={<ProfilePage />} />
