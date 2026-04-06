@@ -7,13 +7,22 @@ import { Button } from '../components/ui/Button'
 import { MMRBadge } from '../components/ui/MMRBadge'
 import { Avatar } from '../components/ui/Avatar'
 
-type Format = '1v1' | '5-player'
+type Format = '1v1' | '5-player' | '1v1-turbo' | '5-player-bounty'
+
+const formats = [
+  { id: '1v1' as Format, title: '1 на 1', desc: 'Быстрый матч · 2 игрока', icon: '⚔️', premium: false },
+  { id: '5-player' as Format, title: 'Турнир', desc: '5 игроков · Больше MMR', icon: '🏆', premium: false },
+  { id: '1v1-turbo' as Format, title: 'Turbo', desc: '1 на 1 · Таймер 10 сек', icon: '⚡', premium: true },
+  { id: '5-player-bounty' as Format, title: 'Bounty', desc: '5 игроков · +MMR за каждого', icon: '💀', premium: true },
+]
 
 export default function LobbyPage() {
   const navigate = useNavigate()
   const { user, logoutMutation } = useAuth()
   const [selected, setSelected] = useState<Format | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const isPremium = user?.isPremium ?? false
 
   async function handleFindGame() {
     if (!selected) return
@@ -67,28 +76,34 @@ export default function LobbyPage() {
           Выбери формат
         </motion.h2>
 
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-9 w-full sm:w-auto px-2 sm:px-0">
-          {([
-            { id: '1v1' as Format, title: '1 на 1', desc: 'Быстрый матч · 2 игрока', icon: '⚔️' },
-            { id: '5-player' as Format, title: 'Турнир', desc: '5 игроков · Больше MMR', icon: '🏆' },
-          ]).map(f => (
-            <motion.button
-              key={f.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              onClick={() => setSelected(f.id)}
-              className={`
-                w-full sm:w-[336px] p-8 sm:p-12 rounded-2xl border-2 text-left transition-all
-                ${selected === f.id
-                  ? 'border-accent bg-accent/10'
-                  : 'border-border bg-surface hover:border-accent/50'}
-              `}
-            >
-              <div className="text-5xl sm:text-7xl mb-4 sm:mb-6">{f.icon}</div>
-              <div className="text-white font-semibold text-xl sm:text-2xl">{f.title}</div>
-              <div className="text-muted text-sm sm:text-base mt-1 sm:mt-2">{f.desc}</div>
-            </motion.button>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl px-2 sm:px-0">
+          {formats.map(f => {
+            const locked = f.premium && !isPremium
+            return (
+              <div key={f.id} className="relative">
+                <motion.button
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => !locked && setSelected(f.id)}
+                  className={`
+                    w-full p-8 sm:p-12 rounded-2xl border-2 text-left transition-all
+                    ${locked ? 'opacity-60 cursor-not-allowed' : ''}
+                    ${selected === f.id ? 'border-accent bg-accent/10' : 'border-border bg-surface hover:border-accent/50'}
+                  `}
+                >
+                  <div className="text-5xl sm:text-7xl mb-4 sm:mb-6">{f.icon}</div>
+                  <div className="text-white font-semibold text-xl sm:text-2xl">{f.title}</div>
+                  <div className="text-muted text-sm sm:text-base mt-1 sm:mt-2">{f.desc}</div>
+                </motion.button>
+                {locked && (
+                  <div className="absolute inset-0 rounded-2xl flex flex-col items-center justify-center gap-1 pointer-events-none">
+                    <span className="text-2xl">🔒</span>
+                    <span className="text-amber-400 text-xs font-bold">PREMIUM</span>
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
 
         <Button
