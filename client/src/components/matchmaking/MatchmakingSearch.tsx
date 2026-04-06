@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 
 interface MatchmakingSearchProps {
-  format: '1v1' | '5-player'
+  format: '1v1' | '5-player' | '1v1-turbo' | '5-player-bounty'
   elapsed: number
   queueCount?: number
 }
@@ -31,9 +31,9 @@ export function MatchmakingSearch({ format, elapsed, queueCount = 1 }: Matchmaki
       <div className="text-center">
         <p className="text-white text-2xl font-semibold">Поиск игры...</p>
         <p className="text-muted text-base mt-2">
-          {format === '1v1' ? '1 на 1' : 'Турнир 5 игроков'} · {mins}:{secs}
+          {format === '1v1' ? '1 на 1' : format === '1v1-turbo' ? 'Turbo 1 на 1' : format === '5-player-bounty' ? 'Bounty' : 'Турнир 5 игроков'} · {mins}:{secs}
         </p>
-        {format === '5-player' && (
+        {(format === '5-player' || format === '5-player-bounty') && (
           <p className="text-accent text-sm font-medium mt-3">
             {queueCount} / 5 игроков в очереди
           </p>
