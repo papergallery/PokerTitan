@@ -10,7 +10,7 @@ export default function QueuePage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user } = useAuth()
-  const format = (location.state as { format?: '1v1' | '5-player' })?.format ?? '1v1'
+  const format = (location.state as { format?: '1v1' | '5-player' | '1v1-turbo' | '5-player-bounty' })?.format ?? '1v1'
   const [elapsed, setElapsed] = useState(0)
   const [queueCount, setQueueCount] = useState(1)
 
