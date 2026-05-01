@@ -1,3 +1,5 @@
+
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { FrameGold, FrameNeon, FramePlatinum } from '../components/ui/AvatarFrames'
 
@@ -30,6 +32,9 @@ function AvatarPreview({ Frame }: { Frame: React.ComponentType<{ size: number }>
 export default function ShopPage() {
   const navigate = useNavigate()
 
+
+
+
   const frames = [
     { id: 'gold', name: 'ЗОЛОТО', Frame: FrameGold, desc: 'Классическая золотая рамка с акцентными ромбами' },
     { id: 'neon', name: 'НЕОН', Frame: FrameNeon, desc: 'Яркое зелёное свечение вокруг аватара' },
@@ -59,12 +64,41 @@ export default function ShopPage() {
           opacity: 0.6,
         }}
       />
+
+      {/* Page entrance — cinematic fade with subtle vignette reveal */}
+      <motion.div
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'radial-gradient(ellipse at center, #0a0a0a 0%, #000 100%)',
+          zIndex: 50,
+          pointerEvents: 'none',
+        }}
+      />
+      <motion.div
+        initial={{ opacity: 0.5 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.8, delay: 0.15, ease: 'easeOut' }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'radial-gradient(ellipse at center, transparent 40%, #c41e3a08 70%, transparent 100%)',
+          zIndex: 49,
+          pointerEvents: 'none',
+        }}
+      />
       {/* Accent lines */}
       <div style={{ position: 'fixed', top: 0, right: 0, width: '40vw', height: '2px', background: 'linear-gradient(90deg, transparent, #c41e3a)', zIndex: 2 }} />
       <div style={{ position: 'fixed', bottom: 0, left: 0, width: '40vw', height: '1px', background: 'linear-gradient(90deg, #c41e3a33, transparent)', zIndex: 2 }} />
 
       {/* Header */}
-      <header
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.3 }}
         style={{
           position: 'relative',
           zIndex: 10,
@@ -106,9 +140,12 @@ export default function ShopPage() {
           МАГАЗИН
         </div>
         <div style={{ width: '20px' }} />
-      </header>
+      </motion.header>
 
-      <main
+      <motion.main
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25, duration: 0.4 }}
         style={{
           position: 'relative',
           zIndex: 10,
@@ -166,10 +203,11 @@ export default function ShopPage() {
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {[
-                    'Золотой никнейм за столом и в лобби',
-                    'Расширенная статистика: график MMR, винрейт, история рук',
-                    'Эксклюзивная рамка для аватара',
                     'Доступ к закрытым форматам игры',
+                    'Расширенная статистика: график MMR, винрейт, история рук',
+                    'Онлайн статистика: игроки на сайте, в поиске и в играх',
+                    'Золотой никнейм за столом и в лобби',
+                    'Эксклюзивная рамка для аватара',
                   ].map((item, i) => (
                     <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: '#999', fontSize: '12px', letterSpacing: '0.03em', lineHeight: 1.5 }}>
                       <span style={{ color: '#c41e3a', flexShrink: 0 }}>✓</span>
@@ -191,7 +229,7 @@ export default function ShopPage() {
                     lineHeight: 1,
                   }}
                 >
-                  99 ₽
+                  199 ₽
                 </div>
                 <div style={{ color: '#555', fontSize: '11px', letterSpacing: '0.1em', marginBottom: '16px', marginTop: '4px' }}>
                   РАЗОВЫЙ ПЛАТЁЖ
@@ -370,7 +408,7 @@ export default function ShopPage() {
           </p>
         </section>
 
-      </main>
+      </motion.main>
     </div>
   )
 }

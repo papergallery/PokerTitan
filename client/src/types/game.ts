@@ -11,11 +11,13 @@ export interface GamePlayer {
   userId: number
   name: string
   avatarUrl?: string
+  isPremium?: boolean
   cards: (Card | null)[]
   chips: number
   status: PlayerStatus
   bet: number
-  mmr: number
+  totalBet?: number
+  mmr?: number
 }
 
 export interface GameState {
@@ -26,14 +28,19 @@ export interface GameState {
   currentPlayerId: number
   stage: GameStage
   currentBet: number
+  lastRaiseIncrement: number
   myUserId: number
   timeLeft?: number
+  dealerUserId?: number
+  sbUserId?: number
+  bbUserId?: number
 }
 
 export interface GameResult {
   winnerId: number
   pot: number
   winningHand?: string
+  handName?: string
 }
 
 export interface GameEnd {

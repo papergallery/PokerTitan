@@ -4,19 +4,29 @@ import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
 import fastifyOauth2 from '@fastify/oauth2';
 import fastifyMultipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
+import fastifyRateLimit from '@fastify/rate-limit';
 import { Server as SocketIOServer } from 'socket.io';
 import dotenv from 'dotenv';
+import path from 'path';
 
 import { runMigrations } from './db/migrations';
 import { authRoutes } from './auth/auth.routes';
 import { userRoutes } from './routes/user.routes';
-import { matchmakingRoutes } from './routes/matchmaking.routes';
 import { initSocketHandler } from './socket/socket.handler';
+import { statsRoutes } from './routes/stats.routes';
 
 dotenv.config();
 
 const PORT = parseInt(process.env.PORT ?? '3001', 10);
 const CLIENT_URL = process.env.CLIENT_URL ?? 'http://localhost:5173';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  // eslint-disable-next-line no-console
+  console.error('FATAL: JWT_SECRET must be set in environment and be at least 32 characters long');
+  process.exit(1);
+}
 
 async function main() {
   const app = Fastify({ logger: true });
@@ -29,10 +39,16 @@ async function main() {
   await app.register(fastifyCookie);
 
   await app.register(fastifyJwt, {
-    secret: process.env.JWT_SECRET ?? 'changeme-use-a-real-secret',
+    secret: JWT_SECRET as string,
+  });
+
+  await app.register(fastifyRateLimit, {
+    global: false,
   });
 
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    const callbackUri =
+      process.env.OAUTH_CALLBACK_URL ?? `http://localhost:${PORT}/auth/google/callback`;
     await app.register(fastifyOauth2, {
       name: 'googleOAuth2',
       scope: ['profile', 'email'],
@@ -44,7 +60,7 @@ async function main() {
         auth: fastifyOauth2.GOOGLE_CONFIGURATION,
       },
       startRedirectPath: '/auth/google',
-      callbackUri: `http://localhost:${PORT}/auth/google/callback`,
+      callbackUri,
     });
   } else {
     // Stub route when Google credentials are not configured
@@ -57,9 +73,21 @@ async function main() {
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   });
 
+  // Static serving for uploaded avatars (production usually goes via nginx, but
+  // we register it here so dev / standalone deploys work without extra setup).
+  await app.register(fastifyStatic, {
+    root: path.join(__dirname, '../../uploads'),
+    prefix: '/uploads/',
+    decorateReply: false,
+  });
+
+  const io = new SocketIOServer(app.server, {
+    cors: { origin: CLIENT_URL, credentials: true },
+  });
+
   await app.register(authRoutes);
   await app.register(userRoutes);
-  await app.register(matchmakingRoutes);
+  await app.register(statsRoutes(io));
 
   app.get('/health', async () => ({
     status: 'ok',
@@ -69,10 +97,6 @@ async function main() {
   }));
 
   await app.ready();
-
-  const io = new SocketIOServer(app.server, {
-    cors: { origin: CLIENT_URL, credentials: true },
-  });
 
   initSocketHandler(io, app);
 

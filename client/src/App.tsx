@@ -3,15 +3,13 @@ import { useAuth } from './hooks/useAuth'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
-import LobbyPage from './pages/LobbyPage'
 import LobbyPage2 from './pages/LobbyPage2'
-import LobbyPage3 from './pages/LobbyPage3'
-import LobbyPage4 from './pages/LobbyPage4'
 import QueuePage from './pages/QueuePage'
 import GamePage from './pages/GamePage'
 import ProfilePage from './pages/ProfilePage'
 import ShopPage from './pages/ShopPage'
 import OfferPage from './pages/OfferPage'
+import LeaderboardPage from './pages/LeaderboardPage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -33,13 +31,10 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/lobby" element={<PrivateRoute><LobbyPage2 /></PrivateRoute>} />
-      <Route path="/lobby-old" element={<PrivateRoute><LobbyPage /></PrivateRoute>} />
-      <Route path="/lobby2" element={<PrivateRoute><LobbyPage2 /></PrivateRoute>} />
-      <Route path="/lobby3" element={<PrivateRoute><LobbyPage3 /></PrivateRoute>} />
-      <Route path="/lobby4" element={<PrivateRoute><LobbyPage4 /></PrivateRoute>} />
       <Route path="/queue" element={<PrivateRoute><QueuePage /></PrivateRoute>} />
       <Route path="/game/:id" element={<PrivateRoute><GamePage /></PrivateRoute>} />
       <Route path="/profile/:id" element={<ProfilePage />} />
+      <Route path="/leaderboard" element={<LeaderboardPage />} />
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/offer" element={<OfferPage />} />
     </Routes>

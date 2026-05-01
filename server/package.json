@@ -13,6 +13,7 @@
     "@fastify/jwt": "^8",
     "@fastify/multipart": "^8.3.0",
     "@fastify/oauth2": "^7",
+    "@fastify/rate-limit": "^9.1.0",
     "@fastify/static": "^7.0.4",
     "bcrypt": "^5",
     "dotenv": "^16",

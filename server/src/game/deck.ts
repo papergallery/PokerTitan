@@ -1,3 +1,5 @@
+import { randomInt } from 'node:crypto';
+
 export type Suit = 's' | 'h' | 'd' | 'c';
 export type Rank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'T' | 'J' | 'Q' | 'K' | 'A';
 
@@ -16,9 +18,9 @@ export function createShuffledDeck(): Card[] {
       deck.push({ rank, suit });
     }
   }
-  // Fisher-Yates shuffle
+  // Fisher-Yates shuffle with cryptographic randomness
   for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = randomInt(i + 1);
     [deck[i], deck[j]] = [deck[j], deck[i]];
   }
   return deck;

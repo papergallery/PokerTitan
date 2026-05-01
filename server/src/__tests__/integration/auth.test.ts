@@ -16,6 +16,7 @@ const mockUser = {
   name: 'Test User',
   avatarUrl: null,
   mmr: 1000,
+  isPremium: false,
 }
 
 let app: FastifyInstance

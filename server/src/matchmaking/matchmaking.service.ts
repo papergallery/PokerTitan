@@ -75,14 +75,15 @@ export function tryMatch(format: GameFormat): QueueEntry[] | null {
 
   if (queue.length < needed) return null;
 
-  // Sort by MMR
-  queue.sort((a, b) => a.mmr - b.mmr);
+  // Sort a copy by MMR — never mutate the underlying queue, otherwise
+  // subsequent inserts would not preserve FIFO ordering for `joinedAt`.
+  const sorted = [...queue].sort((a, b) => a.mmr - b.mmr);
 
   const now = new Date();
 
   // Try to find a group within MMR range
-  for (let i = 0; i <= queue.length - needed; i++) {
-    const group = queue.slice(i, i + needed);
+  for (let i = 0; i <= sorted.length - needed; i++) {
+    const group = sorted.slice(i, i + needed);
     const minMmr = group[0].mmr;
     const maxMmr = group[needed - 1].mmr;
 

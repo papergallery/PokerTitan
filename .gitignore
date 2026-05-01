@@ -7,3 +7,6 @@ deploy/nginx/ssl/
 .DS_Store
 coverage/
 .claude/settings.local.json
+.claude/skills/
+uploads/
+screenshots/

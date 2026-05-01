@@ -39,9 +39,9 @@ describe('GET /users/:id', () => {
     expect(res.statusCode).toBe(404)
   })
 
-  it('returns user profile', async () => {
+  it('returns user profile without leaking email', async () => {
     vi.mocked(db.query).mockResolvedValue({
-      rows: [{ id: 1, email: 'a@b.com', name: 'Alice', avatar_url: null, mmr: 1200 }],
+      rows: [{ id: 1, name: 'Alice', avatarUrl: null, mmr: 1200, isPremium: false }],
       rowCount: 1,
     } as never)
     const res = await app.inject({ method: 'GET', url: '/users/1' })
@@ -49,6 +49,8 @@ describe('GET /users/:id', () => {
     const body = JSON.parse(res.body)
     expect(body.name).toBe('Alice')
     expect(body.mmr).toBe(1200)
+    // Email must not appear in public profile responses.
+    expect(body.email).toBeUndefined()
   })
 })
 

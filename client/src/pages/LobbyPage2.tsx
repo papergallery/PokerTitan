@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
-import { matchmakingApi } from '../api/matchmaking'
 import { Avatar } from '../components/ui/Avatar'
+import { useQuery } from '@tanstack/react-query'
+import { statsApi } from '../api/stats'
 
 type Format = '1v1' | '5-player' | '1v1-turbo' | '5-player-bounty'
 
@@ -33,7 +34,7 @@ const formats: FormatDef[] = [
   },
   {
     id: '5-player',
-    label: 'ТУРНИР',
+    label: 'TOURNAMENT',
     subtitle: '5 игроков',
     suit: 'HEARTS',
     suitSymbol: '♥',
@@ -74,25 +75,30 @@ export default function LobbyPage2() {
   const { user, logoutMutation } = useAuth()
   const [selected, setSelected] = useState<Format | null>(null)
   const [loading, setLoading] = useState(false)
-  const [scanDone, setScanDone] = useState(false)
   const [hoveredCard, setHoveredCard] = useState<Format | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)')
+    setIsMobile(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   const isPremium = user?.isPremium ?? false
 
-  useEffect(() => {
-    const t = setTimeout(() => setScanDone(true), 800)
-    return () => clearTimeout(t)
-  }, [])
+  const { data: onlineStats } = useQuery({
+    queryKey: ['online-stats'],
+    queryFn: () => statsApi.getOnline().then(r => r.data),
+    enabled: isPremium,
+    refetchInterval: 10000,
+  })
 
-  async function handleFindGame() {
+  function handleFindGame() {
     if (!selected) return
     setLoading(true)
-    try {
-      await matchmakingApi.joinQueue(selected as '1v1' | '5-player')
-      navigate('/queue', { state: { format: selected } })
-    } finally {
-      setLoading(false)
-    }
+    navigate('/queue', { state: { format: selected } })
   }
 
   if (!user) return null
@@ -148,23 +154,31 @@ export default function LobbyPage2() {
         }}
       />
 
-      {/* Scan line effect on load */}
-      {!scanDone && (
-        <motion.div
-          initial={{ top: '-4px' }}
-          animate={{ top: '110vh' }}
-          transition={{ duration: 0.7, ease: 'easeIn' }}
-          style={{
-            position: 'fixed',
-            left: 0,
-            right: 0,
-            height: '4px',
-            background: 'linear-gradient(90deg, transparent, #c41e3a, transparent)',
-            zIndex: 100,
-            boxShadow: '0 0 24px 4px #c41e3a88',
-          }}
-        />
-      )}
+      {/* Page entrance — cinematic fade with subtle vignette reveal */}
+      <motion.div
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'radial-gradient(ellipse at center, #0a0a0a 0%, #000 100%)',
+          zIndex: 50,
+          pointerEvents: 'none',
+        }}
+      />
+      <motion.div
+        initial={{ opacity: 0.5 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.8, delay: 0.15, ease: 'easeOut' }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'radial-gradient(ellipse at center, transparent 40%, #c41e3a08 70%, transparent 100%)',
+          zIndex: 49,
+          pointerEvents: 'none',
+        }}
+      />
 
       {/* Subtle red vignette corners */}
       <div
@@ -188,7 +202,7 @@ export default function LobbyPage2() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '20px 32px',
+          padding: isMobile ? '16px 16px' : '20px 32px',
           borderBottom: '1px solid #1e1e1e',
         }}
       >
@@ -209,7 +223,7 @@ export default function LobbyPage2() {
         </div>
 
         {/* Right nav */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '24px' }}>
           {/* MMR chip */}
           <div
             style={{
@@ -252,7 +266,7 @@ export default function LobbyPage2() {
             onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
           >
             <Avatar name={user.name} avatarUrl={user.avatarUrl} size="md" />
-            <span
+            {!isMobile && <span
               style={{
                 color: isPremium ? '#d4af37' : '#f5f0e8',
                 fontSize: '13px',
@@ -261,7 +275,25 @@ export default function LobbyPage2() {
               }}
             >
               {user.name.toUpperCase()}
-            </span>
+            </span>}
+          </button>
+
+          <button
+            onClick={() => navigate('/leaderboard')}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#555',
+              fontSize: '12px',
+              letterSpacing: '0.12em',
+              transition: 'color 0.2s',
+              padding: 0,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#d4af37')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#555')}
+          >
+            ЛИДЕРБОРД
           </button>
 
           <button
@@ -345,11 +377,52 @@ export default function LobbyPage2() {
           </div>
         </motion.div>
 
+        {/* Online stats bar — premium only */}
+        {isPremium && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.4 }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0',
+              padding: '10px 20px',
+              background: '#111',
+              border: '1px solid #1e1e1e',
+              width: '100%',
+              maxWidth: '960px',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '11px',
+              letterSpacing: '0.08em',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e88' }} />
+              <span style={{ color: '#f5f0e8' }}>{onlineStats?.online ?? 0}</span>
+              <span style={{ color: '#aaa' }}>ОНЛАЙН</span>
+            </span>
+            <span style={{ color: '#333', margin: '0 16px' }}>·</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#d4af37', boxShadow: '0 0 6px #d4af3788' }} />
+              <span style={{ color: '#f5f0e8' }}>{onlineStats?.inQueue ?? 0}</span>
+              <span style={{ color: '#aaa' }}>В ПОИСКЕ</span>
+            </span>
+            <span style={{ color: '#333', margin: '0 16px' }}>·</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#c41e3a', boxShadow: '0 0 6px #c41e3a88' }} />
+              <span style={{ color: '#f5f0e8' }}>{onlineStats?.inGames ?? 0}</span>
+              <span style={{ color: '#aaa' }}>В ИГРЕ</span>
+            </span>
+          </motion.div>
+        )}
+
         {/* Format cards grid */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
             gap: '2px',
             width: '100%',
             maxWidth: '960px',
@@ -368,10 +441,9 @@ export default function LobbyPage2() {
                 transition={{ delay: 0.5 + i * 0.1, duration: 0.5, ease: 'easeOut' }}
               >
                 <button
-                  onClick={() => !locked && setSelected(f.id)}
+                  onClick={() => locked ? navigate('/shop') : setSelected(f.id)}
                   onMouseEnter={() => setHoveredCard(f.id)}
                   onMouseLeave={() => setHoveredCard(null)}
-                  disabled={locked}
                   style={{
                     width: '100%',
                     background: isSelected
@@ -388,8 +460,8 @@ export default function LobbyPage2() {
                         ? '#3a3a3a'
                         : '#2a2a2a'
                     }`,
-                    cursor: locked ? 'not-allowed' : 'pointer',
-                    padding: '32px 28px',
+                    cursor: 'pointer',
+                    padding: isMobile ? '24px 20px' : '32px 28px',
                     textAlign: 'left',
                     position: 'relative',
                     overflow: 'hidden',
@@ -420,7 +492,7 @@ export default function LobbyPage2() {
                       top: '16px',
                       right: '20px',
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: '56px',
+                      fontSize: isMobile ? '44px' : '56px',
                       color: isSelected ? f.accentColor + '22' : '#2e2e2e',
                       lineHeight: 1,
                       transition: 'color 0.3s',
@@ -448,7 +520,7 @@ export default function LobbyPage2() {
                   <div
                     style={{
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: '40px',
+                      fontSize: isMobile ? '32px' : '40px',
                       letterSpacing: '0.06em',
                       color: '#f5f0e8',
                       lineHeight: 1,
@@ -484,7 +556,7 @@ export default function LobbyPage2() {
                   {/* Description */}
                   <div
                     style={{
-                      fontSize: '12px',
+                      fontSize: '14px',
                       color: '#aaa',
                       lineHeight: 1.7,
                       letterSpacing: '0.02em',

@@ -38,5 +38,17 @@ export async function runMigrations(): Promise<void> {
       updated_at TIMESTAMP DEFAULT NOW()
     );
   `);
+  await db.query(`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS is_premium BOOLEAN DEFAULT FALSE NOT NULL;
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE NOT NULL;
+    CREATE INDEX IF NOT EXISTS users_mmr_idx ON users (mmr DESC, id ASC);
+  `);
+  // One-time backfill: the project previously hardcoded id=1 as admin.
+  // Promote that account if it exists and no admin has been set yet.
+  await db.query(`
+    UPDATE users SET is_admin = TRUE
+    WHERE id = 1 AND is_admin = FALSE
+      AND NOT EXISTS (SELECT 1 FROM users WHERE is_admin = TRUE)
+  `);
   console.log('Migrations completed');
 }

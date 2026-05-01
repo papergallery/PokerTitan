@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { socket } from '../lib/socket'
-import { matchmakingApi } from '../api/matchmaking'
 import { useAuth } from '../hooks/useAuth'
 
 const FORMAT_LABELS: Record<string, string> = {
@@ -55,8 +54,7 @@ export default function QueuePage() {
     }
   }, [format, navigate, user])
 
-  async function handleCancel() {
-    await matchmakingApi.leaveQueue()
+  function handleCancel() {
     socket.emit('leave-queue', { format })
     navigate('/lobby')
   }

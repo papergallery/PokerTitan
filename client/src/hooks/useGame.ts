@@ -13,8 +13,14 @@ export function useGame(tournamentId: number | null) {
 
   useEffect(() => {
     if (!tournamentId) return
-    socket.connect()
 
+    // Re-emit game:ready on every (re)connect so the server re-adds us to
+    // the tournament room after a network blip.
+    const onConnect = () => {
+      socket.emit('game:ready', { tournamentId })
+    }
+
+    socket.on('connect', onConnect)
     socket.on('game:state', (state: GameState) => setGameState(state))
     socket.on('game:result', (result: GameResult) => setLastResult(result))
     socket.on('game:end', (end: GameEnd) => {
@@ -34,9 +40,16 @@ export function useGame(tournamentId: number | null) {
       }, 1000)
     })
 
-    socket.emit('game:ready', { tournamentId })
+    socket.connect()
+
+    // If the socket was already connected before the listener attached, the
+    // 'connect' event won't fire again — so emit explicitly.
+    if (socket.connected) {
+      socket.emit('game:ready', { tournamentId })
+    }
 
     return () => {
+      socket.off('connect', onConnect)
       socket.off('game:state')
       socket.off('game:result')
       socket.off('game:end')

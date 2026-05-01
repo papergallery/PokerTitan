@@ -1,7 +1,9 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { usersApi } from '../api/users'
+import { statsApi } from '../api/stats'
 import { useAuth } from '../hooks/useAuth'
 import { Avatar } from '../components/ui/Avatar'
 import { MMRBadge } from '../components/ui/MMRBadge'
@@ -33,6 +35,12 @@ export default function ProfilePage() {
     queryKey: ['history', userId],
     queryFn: () => usersApi.getHistory(userId).then(r => r.data),
     enabled: !!userId,
+  })
+
+  const { data: extStats } = useQuery({
+    queryKey: ['extended-stats', userId],
+    queryFn: () => statsApi.getExtendedStats(userId).then(r => r.data),
+    enabled: !!user?.isPremium,
   })
 
   if (!user) return (
@@ -132,11 +140,40 @@ export default function ProfilePage() {
             opacity: 0.6,
           }}
         />
+
+      {/* Page entrance — cinematic fade with subtle vignette reveal */}
+      <motion.div
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'radial-gradient(ellipse at center, #0a0a0a 0%, #000 100%)',
+          zIndex: 50,
+          pointerEvents: 'none',
+        }}
+      />
+      <motion.div
+        initial={{ opacity: 0.5 }}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.8, delay: 0.15, ease: 'easeOut' }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'radial-gradient(ellipse at center, transparent 40%, #c41e3a08 70%, transparent 100%)',
+          zIndex: 49,
+          pointerEvents: 'none',
+        }}
+      />
         {/* Accent lines */}
         <div style={{ position: 'fixed', top: 0, right: 0, width: '40vw', height: '2px', background: 'linear-gradient(90deg, transparent, #c41e3a)', zIndex: 2 }} />
         <div style={{ position: 'fixed', bottom: 0, left: 0, width: '40vw', height: '1px', background: 'linear-gradient(90deg, #c41e3a33, transparent)', zIndex: 2 }} />
 
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.4 }}
           style={{
             position: 'relative',
             zIndex: 10,
@@ -342,6 +379,282 @@ export default function ProfilePage() {
           {/* Divider */}
           <div style={{ height: '1px', background: '#1e1e1e', marginBottom: '32px' }} />
 
+          {/* Extended Stats — Premium Only */}
+          {isPremium && extStats && (() => {
+            const mmrData = extStats.mmrHistory ?? []
+            const mmrValues = mmrData.map(d => d.mmr)
+            const minMMR = mmrValues.length ? Math.min(...mmrValues) : 0
+            const maxMMR = mmrValues.length ? Math.max(...mmrValues) : 100
+            const mmrRange = maxMMR - minMMR || 1
+            const svgW = 640
+            const svgH = 220
+            const padL = 54
+            const padR = 16
+            const padT = 24
+            const padB = 36
+            const chartW = svgW - padL - padR
+            const chartH = svgH - padT - padB
+            const points = mmrData.map((d, i) => {
+              const x = padL + (mmrData.length > 1 ? (i / (mmrData.length - 1)) * chartW : chartW / 2)
+              const y = padT + chartH - ((d.mmr - minMMR) / mmrRange) * chartH
+              return { x, y, mmr: d.mmr, date: d.date }
+            })
+            const polyline = points.map(p => `${p.x},${p.y}`).join(' ')
+            // gradient area fill
+            const areaPath = points.length > 1
+              ? `M${points[0].x},${padT + chartH} L${points.map(p => `${p.x},${p.y}`).join(' L')} L${points[points.length - 1].x},${padT + chartH} Z`
+              : ''
+            // grid lines (4 horizontal)
+            const gridLines = [0, 0.25, 0.5, 0.75, 1].map(frac => {
+              const y = padT + chartH - frac * chartH
+              const val = Math.round(minMMR + frac * mmrRange)
+              return { y, val }
+            })
+
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.5 }}
+                style={{ marginBottom: '40px' }}
+              >
+                {/* Section label */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '20px',
+                }}>
+                  <div style={{
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: '22px',
+                    letterSpacing: '0.1em',
+                    color: '#d4af37',
+                    lineHeight: 1,
+                  }}>
+                    РАСШИРЕННАЯ СТАТИСТИКА
+                  </div>
+                  <div style={{
+                    fontSize: '9px',
+                    letterSpacing: '0.2em',
+                    color: '#d4af37',
+                    border: '1px solid #d4af3744',
+                    padding: '2px 8px',
+                    textTransform: 'uppercase',
+                  }}>
+                    PREMIUM
+                  </div>
+                </div>
+
+                {/* Stats cards row */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '2px',
+                  marginBottom: '24px',
+                }}>
+                  {[
+                    { label: 'ИГРЫ', value: String(extStats.totalGames), accent: false },
+                    { label: 'ПОБЕДЫ', value: String(extStats.wins), accent: false },
+                    { label: 'ВИНРЕЙТ', value: `${extStats.winRate}%`, accent: true },
+                  ].map((card) => (
+                    <motion.div
+                      key={card.label}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.45, duration: 0.4 }}
+                      style={{
+                        background: '#111',
+                        border: '1px solid #2a2a2a',
+                        padding: '20px 16px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {/* Subtle top edge accent for winrate card */}
+                      {card.accent && (
+                        <div style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: '2px',
+                          background: 'linear-gradient(90deg, transparent, #c41e3a, transparent)',
+                        }} />
+                      )}
+                      <div style={{
+                        fontSize: '10px',
+                        letterSpacing: '0.2em',
+                        color: '#555',
+                        marginBottom: '8px',
+                      }}>
+                        {card.label}
+                      </div>
+                      <div style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: '32px',
+                        letterSpacing: '0.04em',
+                        color: card.accent ? '#c41e3a' : '#f5f0e8',
+                        lineHeight: 1,
+                      }}>
+                        {card.value}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* MMR Graph */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.55, duration: 0.5 }}
+                  style={{
+                    background: '#111',
+                    border: '1px solid #2a2a2a',
+                    padding: '20px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* Corner decoration */}
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: '60px',
+                    height: '2px',
+                    background: 'linear-gradient(90deg, transparent, #c41e3a66)',
+                  }} />
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: '2px',
+                    height: '40px',
+                    background: 'linear-gradient(180deg, #c41e3a66, transparent)',
+                  }} />
+
+                  <div style={{
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: '18px',
+                    letterSpacing: '0.1em',
+                    color: '#f5f0e8',
+                    marginBottom: '16px',
+                  }}>
+                    ГРАФИК MMR
+                  </div>
+
+                  {mmrData.length > 1 ? (
+                    <svg
+                      viewBox={`0 0 ${svgW} ${svgH}`}
+                      style={{ width: '100%', height: 'auto', display: 'block' }}
+                      preserveAspectRatio="xMidYMid meet"
+                    >
+                      <defs>
+                        <linearGradient id="mmrAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#c41e3a" stopOpacity="0.15" />
+                          <stop offset="100%" stopColor="#c41e3a" stopOpacity="0" />
+                        </linearGradient>
+                        <linearGradient id="mmrLineGrad" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#c41e3a" stopOpacity="0.4" />
+                          <stop offset="30%" stopColor="#c41e3a" stopOpacity="1" />
+                          <stop offset="70%" stopColor="#c41e3a" stopOpacity="1" />
+                          <stop offset="100%" stopColor="#c41e3a" stopOpacity="0.6" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Grid lines */}
+                      {gridLines.map((g, i) => (
+                        <g key={i}>
+                          <line
+                            x1={padL}
+                            y1={g.y}
+                            x2={svgW - padR}
+                            y2={g.y}
+                            stroke="#1e1e1e"
+                            strokeWidth="1"
+                          />
+                          <text
+                            x={padL - 10}
+                            y={g.y + 4}
+                            textAnchor="end"
+                            fill="#444"
+                            fontSize="11"
+                            fontFamily="'JetBrains Mono', monospace"
+                          >
+                            {g.val}
+                          </text>
+                        </g>
+                      ))}
+
+                      {/* Area fill */}
+                      {areaPath && (
+                        <path d={areaPath} fill="url(#mmrAreaGrad)" />
+                      )}
+
+                      {/* MMR line */}
+                      <polyline
+                        points={polyline}
+                        fill="none"
+                        stroke="url(#mmrLineGrad)"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Data points */}
+                      {points.map((p, i) => (
+                        <circle
+                          key={i}
+                          cx={p.x}
+                          cy={p.y}
+                          r="3"
+                          fill="#111"
+                          stroke="#c41e3a"
+                          strokeWidth="1.5"
+                        />
+                      ))}
+
+                      {/* X-axis date labels */}
+                      {points.filter((_, i) => {
+                        if (points.length <= 6) return true
+                        const step = Math.ceil(points.length / 6)
+                        return i % step === 0 || i === points.length - 1
+                      }).map((p, i) => (
+                        <text
+                          key={i}
+                          x={p.x}
+                          y={svgH - 6}
+                          textAnchor="middle"
+                          fill="#444"
+                          fontSize="10"
+                          fontFamily="'JetBrains Mono', monospace"
+                        >
+                          {new Date(p.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
+                        </text>
+                      ))}
+                    </svg>
+                  ) : (
+                    <div style={{
+                      height: '140px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#444',
+                      fontSize: '11px',
+                      letterSpacing: '0.15em',
+                    }}>
+                      НЕДОСТАТОЧНО ДАННЫХ ДЛЯ ГРАФИКА
+                    </div>
+                  )}
+                </motion.div>
+
+                {/* Bottom divider to separate from history */}
+                <div style={{ height: '1px', background: '#1e1e1e', marginTop: '32px', marginBottom: '0' }} />
+              </motion.div>
+            )
+          })()}
+
           {/* History */}
           <div
             style={{
@@ -402,7 +715,7 @@ export default function ProfilePage() {
               НЕТ СЫГРАННЫХ ТУРНИРОВ
             </p>
           )}
-        </div>
+        </motion.div>
       </div>
     </>
   )
