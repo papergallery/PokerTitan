@@ -185,6 +185,19 @@ export function processAction(
   action: 'fold' | 'check' | 'call' | 'raise',
   amount?: number
 ): GameState {
+  // Defensive runtime validation. The TS signature is enforced only at
+  // compile time; at runtime we receive whatever the client sent.
+  if (action !== 'fold' && action !== 'check' && action !== 'call' && action !== 'raise') {
+    return state;
+  }
+  if (
+    action === 'raise' &&
+    amount !== undefined &&
+    (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 0)
+  ) {
+    return state;
+  }
+
   const pIdx = state.players.findIndex(p => p.userId === userId);
   if (pIdx === -1 || pIdx !== state.currentPlayerIndex) return state;
 

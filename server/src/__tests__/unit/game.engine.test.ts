@@ -125,6 +125,65 @@ describe('processAction - rejected actions', () => {
   })
 })
 
+describe('processAction - malformed input (adversarial)', () => {
+  it('rejects unknown action (would otherwise pass turn for free)', () => {
+    const state = createGameState(1, players)
+    const currentUserId = state.players[state.currentPlayerIndex].userId
+    // @ts-expect-error — testing runtime defense against arbitrary client input
+    const result = processAction(state, currentUserId, 'haxor')
+    expect(result).toBe(state)
+  })
+
+  it('rejects raise with NaN amount (would otherwise corrupt state)', () => {
+    const state = createGameState(1, players)
+    const currentUserId = state.players[state.currentPlayerIndex].userId
+    const result = processAction(state, currentUserId, 'raise', NaN)
+    expect(result).toBe(state)
+    // Pot/currentBet untouched
+    expect(state.pot).toBe(30)
+    expect(state.currentBet).toBe(20)
+  })
+
+  it('rejects raise with Infinity amount', () => {
+    const state = createGameState(1, players)
+    const currentUserId = state.players[state.currentPlayerIndex].userId
+    const result = processAction(state, currentUserId, 'raise', Infinity)
+    expect(result).toBe(state)
+  })
+
+  it('rejects raise with negative amount', () => {
+    const state = createGameState(1, players)
+    const currentUserId = state.players[state.currentPlayerIndex].userId
+    const result = processAction(state, currentUserId, 'raise', -1000)
+    expect(result).toBe(state)
+  })
+
+  it('rejects raise with non-number amount', () => {
+    const state = createGameState(1, players)
+    const currentUserId = state.players[state.currentPlayerIndex].userId
+    // @ts-expect-error — testing runtime defense against arbitrary client input
+    const result = processAction(state, currentUserId, 'raise', 'evil')
+    expect(result).toBe(state)
+  })
+
+  it('rejects raise with object amount', () => {
+    const state = createGameState(1, players)
+    const currentUserId = state.players[state.currentPlayerIndex].userId
+    // @ts-expect-error — testing runtime defense against arbitrary client input
+    const result = processAction(state, currentUserId, 'raise', { evil: true })
+    expect(result).toBe(state)
+  })
+
+  it('still accepts undefined amount for raise (means min raise)', () => {
+    const state = createGameState(1, players)
+    const currentUserId = state.players[state.currentPlayerIndex].userId
+    const result = processAction(state, currentUserId, 'raise')
+    // Should NOT be the original state — min raise is a valid action.
+    expect(result).not.toBe(state)
+    expect(result.currentBet).toBeGreaterThan(state.currentBet)
+  })
+})
+
 describe('advanceStage', () => {
   it('pre-flop → flop adds 3 community cards', () => {
     const state = createGameState(1, players)

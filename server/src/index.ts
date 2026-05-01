@@ -40,6 +40,9 @@ async function main() {
 
   await app.register(fastifyJwt, {
     secret: JWT_SECRET as string,
+    // Tokens expire after 7 days — keeps replay window bounded if a token
+    // ever leaks (logs, debug dump, etc.). Matches the cookie maxAge.
+    sign: { expiresIn: '7d' },
   });
 
   await app.register(fastifyRateLimit, {
