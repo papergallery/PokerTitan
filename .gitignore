@@ -10,3 +10,4 @@ coverage/
 .claude/skills/
 uploads/
 screenshots/
+.playwright-mcp/
