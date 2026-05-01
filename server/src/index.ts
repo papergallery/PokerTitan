@@ -73,7 +73,7 @@ async function main() {
   }
 
   await app.register(fastifyMultipart, {
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB — matches the avatar route cap
   });
 
   // Static serving for uploaded avatars (production usually goes via nginx, but

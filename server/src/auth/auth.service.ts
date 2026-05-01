@@ -19,7 +19,7 @@ export async function register(
   if (existing.rows.length > 0) {
     throw new Error('Email already in use');
   }
-  const passwordHash = await bcrypt.hash(password, 10);
+  const passwordHash = await bcrypt.hash(password, 12);
   const result = await db.query<UserRecord>(
     `INSERT INTO users (email, name, password_hash)
      VALUES ($1, $2, $3)
@@ -51,6 +51,11 @@ export async function findOrCreateGoogleUser(profile: {
   name: string;
   avatarUrl?: string;
 }): Promise<UserRecord> {
+  // Normalize email to match the convention used by /auth/login and
+  // /auth/register, otherwise the same person could end up with two
+  // accounts because of letter casing.
+  const email = profile.email.toLowerCase();
+
   const byGoogle = await db.query<UserRecord>(
     'SELECT id, email, name, avatar_url as "avatarUrl", mmr, is_premium as "isPremium" FROM users WHERE google_id = $1',
     [profile.googleId]
@@ -59,7 +64,7 @@ export async function findOrCreateGoogleUser(profile: {
 
   const byEmail = await db.query(
     'SELECT id, email, name, avatar_url as "avatarUrl", mmr, is_premium as "isPremium" FROM users WHERE email = $1',
-    [profile.email]
+    [email]
   );
   if (byEmail.rows.length > 0) {
     await db.query('UPDATE users SET google_id = $1 WHERE id = $2', [
@@ -73,7 +78,7 @@ export async function findOrCreateGoogleUser(profile: {
     `INSERT INTO users (email, name, google_id, avatar_url)
      VALUES ($1, $2, $3, $4)
      RETURNING id, email, name, avatar_url as "avatarUrl", mmr, is_premium as "isPremium"`,
-    [profile.email, profile.name, profile.googleId, profile.avatarUrl ?? null]
+    [email, profile.name, profile.googleId, profile.avatarUrl ?? null]
   );
   return result.rows[0];
 }

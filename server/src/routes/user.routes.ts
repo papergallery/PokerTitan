@@ -3,6 +3,11 @@ import { db } from '../db/client';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import sharp from 'sharp';
+
+const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+const AVATAR_MAX_DIMENSION = 4096;
+const AVATAR_OUTPUT_SIZE = 512;
 
 const COOKIE_NAME = 'token';
 
@@ -180,34 +185,36 @@ export async function userRoutes(app: FastifyInstance): Promise<void> {
     if (!data) return reply.code(400).send({ error: 'No file provided' });
 
     const buffer = await data.toBuffer();
-
-    // Hard cap: avatars must fit in 5 MB after the multipart limit accepted them.
-    if (buffer.length > 5 * 1024 * 1024) {
+    if (buffer.length > AVATAR_MAX_BYTES) {
       return reply.code(413).send({ error: 'Avatar must be 5 MB or less' });
     }
 
-    // Validate magic bytes — never trust client-supplied mimetype.
-    // Frontend always sends JPEG after canvas cropping; PNG is also allowed
-    // for direct uploads.
-    const isJpeg =
-      buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
-    const isPng =
-      buffer.length >= 8 &&
-      buffer[0] === 0x89 &&
-      buffer[1] === 0x50 &&
-      buffer[2] === 0x4e &&
-      buffer[3] === 0x47 &&
-      buffer[4] === 0x0d &&
-      buffer[5] === 0x0a &&
-      buffer[6] === 0x1a &&
-      buffer[7] === 0x0a;
-
-    if (!isJpeg && !isPng) {
-      return reply.code(400).send({ error: 'Only JPEG or PNG images are allowed' });
+    // Process the upload via sharp:
+    //  - parses the image structurally (rejects garbage / non-images),
+    //  - protects against image bombs by checking dimensions before decode,
+    //  - re-encodes to JPEG which strips EXIF and any embedded metadata,
+    //  - normalizes orientation and size so all avatars are uniform.
+    let processed: Buffer;
+    try {
+      const meta = await sharp(buffer).metadata();
+      if (!meta.width || !meta.height) {
+        return reply.code(400).send({ error: 'Invalid image' });
+      }
+      if (meta.width > AVATAR_MAX_DIMENSION || meta.height > AVATAR_MAX_DIMENSION) {
+        return reply.code(400).send({
+          error: `Image dimensions too large (max ${AVATAR_MAX_DIMENSION}×${AVATAR_MAX_DIMENSION})`,
+        });
+      }
+      processed = await sharp(buffer)
+        .rotate() // honor EXIF orientation before stripping
+        .resize(AVATAR_OUTPUT_SIZE, AVATAR_OUTPUT_SIZE, { fit: 'cover' })
+        .jpeg({ quality: 85 })
+        .toBuffer();
+    } catch {
+      return reply.code(400).send({ error: 'Invalid image file' });
     }
 
-    const ext = isJpeg ? 'jpg' : 'png';
-    const filename = `${userId}-${crypto.randomUUID()}.${ext}`;
+    const filename = `${userId}-${crypto.randomUUID()}.jpg`;
     const uploadsDir = path.join(__dirname, '../../../uploads/avatars');
 
     if (!fs.existsSync(uploadsDir)) {
@@ -215,7 +222,7 @@ export async function userRoutes(app: FastifyInstance): Promise<void> {
     }
 
     const filepath = path.join(uploadsDir, filename);
-    await fs.promises.writeFile(filepath, buffer);
+    await fs.promises.writeFile(filepath, processed);
 
     // Best-effort cleanup of the previous avatar to stop unbounded disk growth.
     const prev = await db.query<{ avatar_url: string | null }>(

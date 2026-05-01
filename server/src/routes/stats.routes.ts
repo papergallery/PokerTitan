@@ -67,7 +67,10 @@ export function statsRoutes(io: SocketIOServer) {
       }
 
       clearAllGames();
-      await db.query("UPDATE tournaments SET status = 'finished', finished_at = NOW() WHERE status != 'finished'");
+      // Mark forcibly stopped tournaments as `cancelled` (not `finished`)
+      // so they don't pollute history/stats — those queries filter on
+      // status='finished'.
+      await db.query("UPDATE tournaments SET status = 'cancelled', finished_at = NOW() WHERE status NOT IN ('finished', 'cancelled')");
       return { cleared: true };
     });
 

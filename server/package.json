@@ -20,6 +20,7 @@
     "fastify": "^4",
     "pg": "^8",
     "pokersolver": "^2",
+    "sharp": "^0.34.5",
     "socket.io": "^4"
   },
   "devDependencies": {
