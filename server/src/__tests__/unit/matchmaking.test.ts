@@ -105,6 +105,23 @@ describe('tryMatch - 5-player', () => {
   })
 })
 
+describe('format validation (defense in depth)', () => {
+  it('throws on unknown format from joinQueue', () => {
+    // @ts-expect-error — testing runtime defense against arbitrary input
+    expect(() => joinQueue(makeEntry(1, 1000), 'fake-format')).toThrow()
+  })
+
+  it('throws on unknown format from leaveQueue', () => {
+    // @ts-expect-error — testing runtime defense against arbitrary input
+    expect(() => leaveQueue(1, 'fake-format')).toThrow()
+  })
+
+  it('throws on unknown format from tryMatch', () => {
+    // @ts-expect-error — testing runtime defense against arbitrary input
+    expect(() => tryMatch('fake-format')).toThrow()
+  })
+})
+
 describe('leaveAllQueues', () => {
   it('removes player from both queues', () => {
     joinQueue(makeEntry(1, 1000), '1v1')

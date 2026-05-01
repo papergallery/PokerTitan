@@ -16,7 +16,11 @@ function getQueue(format: GameFormat): QueueEntry[] {
   if (format === '1v1') return queue1v1;
   if (format === '5-player') return queue5player;
   if (format === '1v1-turbo') return queue1v1turbo;
-  return queue5playerBounty;
+  if (format === '5-player-bounty') return queue5playerBounty;
+  // Defense in depth — a malformed `format` should not silently land in
+  // the bounty queue. Callers (socket handler, internal loops) must
+  // validate the value before reaching this point.
+  throw new Error(`Unknown matchmaking format: ${String(format)}`);
 }
 
 function logQueue(format: GameFormat): void {

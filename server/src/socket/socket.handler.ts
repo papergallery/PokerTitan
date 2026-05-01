@@ -11,6 +11,13 @@ interface JwtPayload {
   email: string;
 }
 
+const VALID_FORMATS: ReadonlySet<GameFormat> = new Set([
+  '1v1',
+  '5-player',
+  '1v1-turbo',
+  '5-player-bounty',
+]);
+
 // In-memory game states: tournamentId → GameState
 const gameStates = new Map<number, gameEngine.GameState>();
 // Player names: tournamentId → (userId → { name, avatarUrl, isPremium })
@@ -469,22 +476,49 @@ export function initSocketHandler(io: Server, app: FastifyInstance): void {
     const userId = (socket.data as { userId: number }).userId;
     console.log(`[Socket] Connected: user=${userId} socket=${socket.id}`);
 
-    socket.on('join-queue', (data: { format: GameFormat; mmr: number }) => {
-      // Prevent joining queue if already in an active game
+    socket.on('join-queue', async (data: { format: GameFormat; mmr?: number }) => {
+      // Validate format up-front — never trust the client.
+      if (!data || !VALID_FORMATS.has(data.format)) {
+        socket.emit('queue:error', { message: 'Invalid format' });
+        return;
+      }
+
+      // Prevent joining queue if already in an active game.
       for (const state of gameStates.values()) {
         if (state.players.some(p => p.userId === userId && p.status !== 'eliminated')) {
           socket.emit('queue:error', { message: 'Already in an active game' });
           return;
         }
       }
+
+      // Look up the user's authoritative MMR from the DB — `data.mmr`
+      // (sent by the client for legacy reasons) cannot be trusted.
+      let mmr: number;
+      try {
+        const result = await db.query<{ mmr: number }>(
+          'SELECT mmr FROM users WHERE id = $1',
+          [userId]
+        );
+        if (result.rows.length === 0) {
+          socket.emit('queue:error', { message: 'User not found' });
+          return;
+        }
+        mmr = result.rows[0].mmr;
+      } catch (err) {
+        console.error('[MM] join-queue DB lookup failed', err);
+        socket.emit('queue:error', { message: 'Server error' });
+        return;
+      }
+
       matchmaking.joinQueue(
-        { userId, mmr: data.mmr, joinedAt: new Date(), socketId: socket.id },
+        { userId, mmr, joinedAt: new Date(), socketId: socket.id },
         data.format
       );
       if (data.format === '5-player' || data.format === '5-player-bounty') broadcastQueueCount(io, data.format);
     });
 
     socket.on('leave-queue', (data: { format: GameFormat }) => {
+      if (!data || !VALID_FORMATS.has(data.format)) return;
       matchmaking.leaveQueue(userId, data.format);
     });
 
