@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PokerTitan — Design Variants Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0a;
+  --paper:#f6f2ea;
+  --ink:#0a0a0a;
+  --grey:#888070;
+  --rule:rgba(255,255,255,.1);
+  --accent:#d62d20;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+
+body{
+  font-family:'Fraunces',serif;
+  font-variation-settings:'opsz' 24;
+  color:var(--paper);
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(214,45,32,.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(212,168,73,.06) 0%, transparent 50%);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+.frame{
+  max-width:1340px;margin:0 auto;
+  padding:64px 56px 80px;
+}
+@media(max-width:780px){.frame{padding:32px 20px 48px}}
+
+.head{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:end;gap:36px;
+  border-bottom:1px solid var(--rule);
+  padding-bottom:32px;
+}
+.head h1{
+  font-family:'Fraunces',serif;
+  font-variation-settings:'opsz' 144;
+  font-weight:300;
+  font-size:84px;line-height:.95;
+  letter-spacing:-.02em;
+}
+.head h1 em{
+  font-style:italic;color:var(--accent);font-weight:300;
+}
+.head .meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:.18em;color:var(--grey);
+  text-transform:uppercase;
+  text-align:right;
+  display:flex;flex-direction:column;gap:4px;
+}
+.head .meta b{color:var(--paper);font-weight:500}
+
+.intro{
+  margin:36px 0 56px;
+  display:grid;grid-template-columns:1fr 1fr;gap:48px;
+  border-bottom:1px solid var(--rule);
+  padding-bottom:36px;
+}
+@media(max-width:780px){.intro{grid-template-columns:1fr;gap:18px}.head h1{font-size:48px}.head{grid-template-columns:1fr}}
+.intro p{
+  font-size:18px;line-height:1.55;
+  color:rgba(246,242,234,.7);
+  font-weight:300;
+}
+.intro p em{color:var(--accent);font-style:italic}
+.intro p b{color:var(--paper);font-weight:500}
+
+/* Variant cards */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);gap:36px;
+}
+@media(max-width:780px){.grid{grid-template-columns:1fr}}
+
+.card{
+  display:block;
+  text-decoration:none;
+  border:1px solid var(--rule);
+  background:rgba(255,255,255,.02);
+  padding:36px;
+  position:relative;
+  transition:all .35s;
+  overflow:hidden;
+  color:inherit;
+}
+.card:hover{
+  border-color:var(--accent);
+  transform:translateY(-2px);
+  background:rgba(214,45,32,.04);
+}
+.card .num{
+  position:absolute;top:24px;right:32px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.32em;color:var(--grey);
+  text-transform:uppercase;
+}
+.card .num b{color:var(--accent);font-weight:500}
+.card h2{
+  font-family:'Fraunces',serif;
+  font-variation-settings:'opsz' 144;
+  font-weight:400;font-size:42px;
+  line-height:1;letter-spacing:-.01em;
+  margin-bottom:6px;
+}
+.card h2 em{font-style:italic;color:var(--accent)}
+.card .tagline{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.32em;color:var(--grey);
+  text-transform:uppercase;margin-bottom:24px;
+}
+.card .desc{
+  font-size:15px;line-height:1.5;
+  color:rgba(246,242,234,.65);
+  font-weight:300;
+  margin-bottom:24px;
+}
+.card .meta{
+  display:grid;grid-template-columns:auto 1fr;gap:8px 14px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.18em;color:var(--grey);
+  text-transform:uppercase;
+  margin-bottom:24px;
+}
+.card .meta dt{color:rgba(246,242,234,.4)}
+.card .meta dd{color:var(--paper)}
+.card .palette{
+  display:flex;gap:0;height:32px;margin-bottom:24px;
+}
+.card .palette .swatch{
+  flex:1;
+  display:flex;align-items:end;justify-content:center;
+  padding-bottom:4px;
+  font-family:'JetBrains Mono',monospace;font-size:8px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+.card .open{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Fraunces',serif;font-style:italic;
+  font-size:18px;color:var(--accent);
+  font-weight:400;
+}
+.card .open::after{
+  content:'→';font-style:normal;
+  transition:transform .25s;
+}
+.card:hover .open::after{transform:translateX(6px)}
+
+/* Variant-specific accent strips */
+.card.v1{background:linear-gradient(135deg, rgba(8,41,30,.4) 0%, rgba(0,0,0,0) 60%)}
+.card.v2{background:linear-gradient(135deg, rgba(255,43,149,.08) 0%, rgba(0,229,255,.05) 60%)}
+.card.v3{background:linear-gradient(135deg, rgba(58,29,13,.3) 0%, rgba(176,106,26,.04) 60%)}
+.card.v4{background:linear-gradient(135deg, rgba(246,242,234,.08) 0%, rgba(214,45,32,.04) 60%)}
+
+.foot{
+  margin-top:64px;
+  padding-top:24px;
+  border-top:1px solid var(--rule);
+  display:flex;justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.18em;color:var(--grey);
+  text-transform:uppercase;
+}
+
+.note{
+  margin-top:36px;padding:18px 22px;
+  border-left:2px solid var(--accent);
+  background:rgba(214,45,32,.04);
+  font-size:14px;line-height:1.55;color:rgba(246,242,234,.65);
+  font-weight:300;
+}
+.note b{color:var(--paper);font-weight:500}
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <header class="head">
+    <h1>Design <em>Variants</em><br>Gallery</h1>
+    <div class="meta">
+      <span>POKER&nbsp;TITAN</span>
+      <span>04 PROPOSALS</span>
+      <span>03 / V / MMXXVI</span>
+    </div>
+  </header>
+
+  <div class="intro">
+    <p>
+      Четыре независимых <em>визуальных</em> направления для игрового стола.
+      Функциональный набор <b>идентичен</b> существующему: места игроков, аватары, позиции (D/SB/BB), карты, банк, фишки, стадии раздачи, кнопки действий, таймер.
+    </p>
+    <p>
+      Различается <b>всё остальное</b> — типографика, палитра, форма стола, текстуры, орнаменты, анимации.
+      Каждый вариант поддерживает оба формата — <em>1 v 1</em> и <em>5 игроков</em> — переключаемые в шапке.
+    </p>
+  </div>
+
+  <div class="grid">
+
+    <a class="card v1" href="variant-1-casino-royale.html">
+      <span class="num">№ <b>01</b></span>
+      <h2>Casino <em>Royale</em></h2>
+      <div class="tagline">— art deco · luxe parisien —</div>
+      <p class="desc">
+        Тёмно-изумрудный фетр в латунной оправе, золотые филигранные орнаменты, сюжет солнечного медальона. Карты — на кремовой бумаге с серифным набором. Похоже на казино из старого фильма про Монте-Карло.
+      </p>
+      <dl class="meta">
+        <dt>Display</dt><dd>Cinzel Decorative</dd>
+        <dt>Body</dt><dd>Cormorant Garamond</dd>
+        <dt>Numerals</dt><dd>DM Serif Display</dd>
+      </dl>
+      <div class="palette">
+        <span class="swatch" style="background:#08291e;color:#d4a849">felt</span>
+        <span class="swatch" style="background:#d4a849;color:#1a0e08">gold</span>
+        <span class="swatch" style="background:#5a1818;color:#f6ecd0">oxblood</span>
+        <span class="swatch" style="background:#f6ecd0;color:#1a0e08">ivory</span>
+      </div>
+      <span class="open">Open variant</span>
+    </a>
+
+    <a class="card v2" href="variant-2-neon-tokyo.html">
+      <span class="num">№ <b>02</b></span>
+      <h2>Neon <em>Tokyo</em></h2>
+      <div class="tagline">— cyberpunk · hud · holographic —</div>
+      <p class="desc">
+        Шестигранный стол с неоновой обводкой, сетка перспективы под полом, голографические карты с радужным отливом, скан-линии и glassmorphism-панели. Рифмуется со Shibuya 2078, синтвейв-плейлистом и токсичным магентовым свечением.
+      </p>
+      <dl class="meta">
+        <dt>Display</dt><dd>Bruno Ace SC</dd>
+        <dt>Body</dt><dd>Chakra Petch</dd>
+        <dt>Mono</dt><dd>Share Tech Mono</dd>
+      </dl>
+      <div class="palette">
+        <span class="swatch" style="background:#04041a;color:#00e5ff">midnight</span>
+        <span class="swatch" style="background:#ff2b95;color:#04041a">magenta</span>
+        <span class="swatch" style="background:#00e5ff;color:#04041a">cyan</span>
+        <span class="swatch" style="background:#9dff5d;color:#04041a">acid</span>
+      </div>
+      <span class="open">Open variant</span>
+    </a>
+
+    <a class="card v3" href="variant-3-saloon-western.html">
+      <span class="num">№ <b>03</b></span>
+      <h2>Lulu's <em>Saloon</em></h2>
+      <div class="tagline">— vintage western · 1880s —</div>
+      <p class="desc">
+        Состаренная бумага афиши «WANTED», круглый стол из красного дерева с латунными гвоздями, шрифты разыскивающего листка и пишущей машинки. Карты — пергаментные с серифом, бэйджи позиций — оттиски штампов чернилами.
+      </p>
+      <dl class="meta">
+        <dt>Display</dt><dd>Rye</dd>
+        <dt>Body</dt><dd>Special Elite</dd>
+        <dt>Caps</dt><dd>IM Fell English SC</dd>
+      </dl>
+      <div class="palette">
+        <span class="swatch" style="background:#ecd9a8;color:#3a1d0d">paper</span>
+        <span class="swatch" style="background:#3a1d0d;color:#ecd9a8">mahogany</span>
+        <span class="swatch" style="background:#a87a3c;color:#1a0e08">brass</span>
+        <span class="swatch" style="background:#8a2020;color:#ecd9a8">crimson</span>
+      </div>
+      <span class="open">Open variant</span>
+    </a>
+
+    <a class="card v4" href="variant-4-quantum-minimal.html">
+      <span class="num">№ <b>04</b></span>
+      <h2>Quantum <em>Minimal</em></h2>
+      <div class="tagline">— editorial · swiss · refined —</div>
+      <p class="desc">
+        Светлая бумажная плоскость, тонкие хайрлайн-линии, контурный овал стола без фактуры. Один акцент — киноварь. Имена игроков — серифом, цифры — крупным числом, позиции — мелкой моноширинной плашкой. Чёрно-белый журнал, вышедший в 1968-м.
+      </p>
+      <dl class="meta">
+        <dt>Display</dt><dd>Fraunces (variable)</dd>
+        <dt>Mono</dt><dd>JetBrains Mono</dd>
+        <dt>Accent</dt><dd>Vermilion #d62d20</dd>
+      </dl>
+      <div class="palette">
+        <span class="swatch" style="background:#f6f2ea;color:#0c0c0a">paper</span>
+        <span class="swatch" style="background:#0c0c0a;color:#f6f2ea">ink</span>
+        <span class="swatch" style="background:#d62d20;color:#f6f2ea">vermilion</span>
+        <span class="swatch" style="background:#dad3c5;color:#0c0c0a">soft</span>
+      </div>
+      <span class="open">Open variant</span>
+    </a>
+
+  </div>
+
+  <div class="note">
+    <b>Заметка по интеграции.</b>
+    Все варианты — самодостаточные HTML-файлы, открываются прямо в браузере без сборки. Внутри каждого — переключатель <em>1 v 1 / 5 игроков</em>, демо-данные, активный таймер и панель действий. Если выберешь направление — перенесу его в React-компонент <code style="font-family:'JetBrains Mono',monospace;color:var(--accent)">GamePage.tsx</code> с мобильной адаптацией и подключением реальных <code style="font-family:'JetBrains Mono',monospace;color:var(--accent)">gameState</code>.
+  </div>
+
+  <footer class="foot">
+    <span>— Variants Gallery —</span>
+    <span>POKER&nbsp;TITAN&nbsp;·&nbsp;MMXXVI</span>
+  </footer>
+
+</div>
+</body>
+</html>

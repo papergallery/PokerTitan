@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Casino Royale — PokerTitan Variant 01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root{
+  --felt-1:#0c3a2a;
+  --felt-2:#08291e;
+  --felt-3:#041710;
+  --gold:#d4a849;
+  --gold-bright:#f1d27a;
+  --gold-deep:#8d6c25;
+  --gold-shadow:#3a2c0c;
+  --rose:#e6b9a0;
+  --oxblood:#5a1818;
+  --oxblood-bright:#7c1f1f;
+  --ivory:#f6ecd0;
+  --ivory-soft:#ead7a8;
+  --ink:#1a0e08;
+  --shadow:rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:400;
+  color:var(--ivory);
+  background:
+    radial-gradient(ellipse at 50% 0%, #1a1108 0%, #0a0604 60%),
+    repeating-linear-gradient(45deg, transparent 0 8px, rgba(0,0,0,.18) 8px 9px);
+  background-blend-mode:multiply;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ─── Page chrome ─────────────────────────────────────────── */
+.frame{
+  max-width:1480px;
+  margin:0 auto;
+  padding:28px 28px 120px;
+  position:relative;
+}
+.masthead{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0 24px;
+  border-bottom:1px solid rgba(212,168,73,.25);
+  position:relative;
+}
+.masthead::after{
+  content:'';
+  position:absolute;left:0;right:0;bottom:-3px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold) 30%,var(--gold) 70%,transparent);
+  opacity:.5;
+}
+.brand{
+  display:flex;align-items:center;gap:18px;
+}
+.brand-mark{
+  width:48px;height:48px;
+  display:grid;place-items:center;
+  border:1px solid var(--gold);
+  background:radial-gradient(circle at 35% 30%,#1a1208,#0c0703);
+  position:relative;
+}
+.brand-mark::before{
+  content:'';position:absolute;inset:3px;border:1px solid rgba(212,168,73,.4);
+}
+.brand-mark svg{width:28px;height:28px}
+.brand-text{
+  font-family:'Cinzel Decorative',serif;
+  font-weight:900;
+  letter-spacing:.34em;
+  font-size:22px;
+  color:var(--gold-bright);
+  text-shadow:0 0 24px rgba(212,168,73,.25);
+}
+.brand-sub{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:13px;
+  color:var(--rose);
+  letter-spacing:.18em;
+  margin-top:-2px;
+}
+.tabs{display:flex;gap:0;border:1px solid rgba(212,168,73,.4);background:rgba(8,5,2,.6)}
+.tabs a{
+  padding:11px 26px;
+  font-family:'Cinzel Decorative',serif;
+  font-weight:700;
+  font-size:11px;
+  letter-spacing:.32em;
+  color:var(--rose);
+  text-decoration:none;
+  border-right:1px solid rgba(212,168,73,.3);
+  transition:all .25s ease;
+  background:transparent;
+  cursor:pointer;
+}
+.tabs a:last-child{border-right:none}
+.tabs a.active{
+  background:linear-gradient(180deg,var(--gold-bright) 0%,var(--gold) 50%,var(--gold-deep) 100%);
+  color:var(--ink);
+  text-shadow:0 1px 0 rgba(255,255,255,.3);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 0 rgba(0,0,0,.25);
+}
+.tabs a:hover:not(.active){color:var(--gold-bright)}
+
+.subline{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-top:18px;font-size:13px;letter-spacing:.16em;
+  color:var(--rose);
+  text-transform:uppercase;
+}
+.subline em{color:var(--gold-bright);font-style:italic;font-weight:500;letter-spacing:.05em;text-transform:none}
+
+/* ─── Stage / pot bar ─── */
+.stagebar{
+  margin-top:20px;
+  display:flex;justify-content:center;align-items:center;gap:14px;
+  font-family:'Cinzel Decorative',serif;
+}
+.stage{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:11px;letter-spacing:.4em;color:rgba(230,185,160,.4);
+  font-weight:400;
+}
+.stage.past{color:var(--gold-deep)}
+.stage.cur{color:var(--gold-bright);font-weight:900;text-shadow:0 0 20px rgba(241,210,122,.5)}
+.stage .dot{
+  width:6px;height:6px;border:1px solid currentColor;transform:rotate(45deg);
+  background:transparent;
+}
+.stage.cur .dot{background:var(--gold-bright);box-shadow:0 0 12px var(--gold-bright)}
+.stage.past .dot{background:var(--gold-deep)}
+.stage-sep{
+  width:50px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,73,.5),transparent);
+}
+
+/* ─── Table area ─── */
+.tablewrap{
+  position:relative;
+  height:760px;
+  margin:32px auto 0;
+  display:grid;
+  place-items:center;
+}
+@media(max-width:900px){.tablewrap{height:680px}}
+
+/* Outer brass frame */
+.table-frame{
+  position:absolute;
+  width:100%;max-width:1280px;
+  aspect-ratio: 16/10;
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse at 50% 30%, #2a1f0e 0%, #14100a 60%, #07050a 100%);
+  box-shadow:
+    0 0 0 2px var(--gold-deep),
+    0 0 0 3px rgba(212,168,73,.5),
+    0 0 0 14px #1a1208,
+    0 0 0 16px var(--gold-deep),
+    0 30px 80px rgba(0,0,0,.7),
+    inset 0 0 80px rgba(0,0,0,.5);
+}
+@media(max-width:900px){.table-frame{aspect-ratio:5/7;max-width:520px}}
+
+/* Inner emerald felt */
+.table-felt{
+  position:absolute;inset:24px;border-radius:50%;
+  background:
+    radial-gradient(ellipse at 50% 38%, var(--felt-1) 0%, var(--felt-2) 50%, var(--felt-3) 100%);
+  box-shadow:
+    inset 0 0 100px rgba(0,0,0,.5),
+    inset 0 0 0 2px rgba(212,168,73,.18);
+  overflow:hidden;
+}
+/* Felt subtle pattern */
+.table-felt::before{
+  content:'';position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(45deg, rgba(0,0,0,0) 0 6px, rgba(0,0,0,.08) 6px 7px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,0) 0 6px, rgba(0,0,0,.08) 6px 7px);
+  opacity:.5;
+}
+/* Center sunburst medallion */
+.medallion{
+  position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+  width:520px;height:520px;
+  pointer-events:none;
+  opacity:.18;
+}
+@media(max-width:900px){.medallion{width:340px;height:340px}}
+
+/* Inner rail (gold inner ring) */
+.table-rail{
+  position:absolute;inset:38px;border-radius:50%;
+  border:1px solid rgba(212,168,73,.35);
+  box-shadow:
+    inset 0 0 0 1px rgba(0,0,0,.5),
+    inset 0 0 40px rgba(0,0,0,.25);
+  pointer-events:none;
+}
+.table-rail::after{
+  content:'';position:absolute;inset:8px;border-radius:50%;
+  border:1px dashed rgba(212,168,73,.18);
+}
+
+/* ─── Center pot card ─── */
+.center{
+  position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  z-index:5;
+}
+.community{
+  display:flex;gap:8px;
+  filter:drop-shadow(0 14px 22px rgba(0,0,0,.55));
+}
+/* Single card */
+.card{
+  width:78px;height:108px;border-radius:5px;
+  background:
+    radial-gradient(circle at 35% 25%, #fdf6dd 0%, #f3e6c0 60%, #e7d4a4 100%);
+  position:relative;
+  border:1px solid #c8a865;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.6),
+    inset 0 -4px 8px rgba(141,108,37,.15);
+  font-family:'DM Serif Display',serif;
+}
+.card .corner{
+  position:absolute;display:flex;flex-direction:column;align-items:center;
+  line-height:.9;
+}
+.card .corner.tl{top:6px;left:7px}
+.card .corner.br{bottom:6px;right:7px;transform:rotate(180deg)}
+.card .corner .r{font-size:18px;font-weight:400;letter-spacing:-.02em}
+.card .corner .s{font-size:14px;margin-top:1px}
+.card .pip{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-size:42px;
+}
+.card.r{color:var(--oxblood)}
+.card.b{color:var(--ink)}
+.card-back{
+  width:78px;height:108px;border-radius:5px;
+  background:
+    repeating-linear-gradient(45deg, #5a1818 0 3px, #4a1212 3px 6px),
+    radial-gradient(circle at 50% 50%, #7c1f1f 0%, #3a0d0d 80%);
+  background-blend-mode:multiply;
+  border:1px solid var(--gold);
+  position:relative;
+  box-shadow:
+    inset 0 0 0 2px var(--ink),
+    inset 0 0 0 3px var(--gold-deep),
+    inset 0 0 24px rgba(0,0,0,.6),
+    0 6px 14px rgba(0,0,0,.5);
+}
+.card-back::before{
+  content:'';position:absolute;inset:6px;
+  border:1px solid var(--gold);
+  background:
+    radial-gradient(circle at center, var(--gold-bright) 0 1px, transparent 1px) 50% 50%/8px 8px,
+    radial-gradient(circle at 50% 50%, transparent 50%, rgba(0,0,0,.4) 100%);
+  opacity:.5;
+}
+.card-back::after{
+  content:'♠';
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-family:'DM Serif Display',serif;
+  font-size:30px;color:var(--gold-bright);
+  text-shadow:0 0 8px rgba(212,168,73,.5);
+  z-index:1;
+}
+.card-empty{
+  width:78px;height:108px;border-radius:5px;
+  border:1px dashed rgba(212,168,73,.25);
+  background:rgba(0,0,0,.18);
+}
+
+/* Pot label */
+.pot-frame{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:10px 32px 12px;
+  background:
+    linear-gradient(180deg, rgba(8,5,2,.85) 0%, rgba(0,0,0,.95) 100%);
+  border:1px solid var(--gold);
+  position:relative;
+}
+.pot-frame::before,.pot-frame::after{
+  content:'';position:absolute;width:18px;height:18px;
+  border:1px solid var(--gold-bright);
+  background:radial-gradient(circle at 30% 30%,var(--gold-bright),var(--gold-deep));
+  transform:rotate(45deg);
+}
+.pot-frame::before{left:-9px;top:50%;margin-top:-9px}
+.pot-frame::after{right:-9px;top:50%;margin-top:-9px}
+.pot-label{
+  font-family:'Cinzel Decorative',serif;
+  font-weight:700;
+  font-size:10px;letter-spacing:.5em;
+  color:var(--rose);
+  text-transform:uppercase;
+}
+.pot-amount{
+  font-family:'DM Serif Display',serif;
+  font-size:38px;
+  color:var(--gold-bright);
+  letter-spacing:.04em;
+  line-height:1;
+  text-shadow:0 0 18px rgba(241,210,122,.45),0 2px 0 rgba(0,0,0,.5);
+}
+.pot-amount em{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--rose);margin-left:4px}
+
+/* ─── Player seat ─── */
+.seat{
+  position:absolute;display:flex;flex-direction:column;align-items:center;gap:8px;
+  z-index:6;
+}
+.seat-card{
+  position:relative;
+  background:linear-gradient(180deg,#1c130a 0%,#0d0805 100%);
+  border:1px solid var(--gold);
+  padding:14px 18px 14px 14px;
+  display:flex;align-items:center;gap:14px;
+  min-width:226px;
+  box-shadow:0 12px 30px rgba(0,0,0,.6);
+}
+.seat-card::before{
+  content:'';position:absolute;inset:3px;border:1px solid rgba(212,168,73,.25);
+  pointer-events:none;
+}
+.seat-card.turn{
+  border-color:var(--gold-bright);
+  box-shadow:0 0 0 1px var(--gold-bright),0 0 32px rgba(241,210,122,.45),0 12px 30px rgba(0,0,0,.6);
+}
+.seat-card.folded{opacity:.32;filter:grayscale(.7)}
+
+.avatar-frame{
+  width:62px;height:62px;
+  position:relative;
+  border-radius:50%;
+  padding:3px;
+  background:
+    conic-gradient(from 90deg, var(--gold-deep), var(--gold-bright), var(--gold), var(--gold-deep));
+  box-shadow:0 0 0 1px var(--gold-deep),inset 0 0 0 1px rgba(0,0,0,.6);
+  flex-shrink:0;
+}
+.avatar{
+  width:100%;height:100%;border-radius:50%;
+  display:grid;place-items:center;
+  font-family:'DM Serif Display',serif;font-size:24px;
+  background:linear-gradient(145deg, #2a1c10 0%, #14100a 100%);
+  color:var(--ivory);
+  border:1px solid var(--ink);
+  letter-spacing:0;
+}
+.avatar.a1{background:linear-gradient(145deg,#3a2010 0%,#180c06 100%);color:var(--gold-bright)}
+.avatar.a2{background:linear-gradient(145deg,#10243a 0%,#06121e 100%);color:#a4c5e8}
+.avatar.a3{background:linear-gradient(145deg,#3a1a2c 0%,#180a14 100%);color:#e8a4c5}
+.avatar.a4{background:linear-gradient(145deg,#3a3010 0%,#181206 100%);color:#e8d8a4}
+.avatar.a5{background:linear-gradient(145deg,#1c3a10 0%,#0e1a06 100%);color:#a4e8c1}
+
+.seat-info{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.seat-name{
+  font-family:'Cinzel Decorative',serif;
+  font-weight:700;
+  font-size:12px;letter-spacing:.18em;
+  color:var(--ivory);
+  text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.seat-name.me{color:var(--gold-bright)}
+.seat-chips{
+  display:flex;align-items:baseline;gap:5px;
+  font-family:'DM Serif Display',serif;font-size:22px;
+  color:var(--gold-bright);
+  letter-spacing:.02em;
+  line-height:1;
+}
+.seat-chips .unit{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:11px;color:var(--rose);letter-spacing:.18em;
+}
+.seat-meta{
+  display:flex;gap:6px;align-items:center;margin-top:2px;
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:12px;color:var(--rose);
+  letter-spacing:.08em;
+}
+.pos-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:'Cinzel Decorative',serif;font-weight:700;
+  font-size:9px;letter-spacing:.2em;
+  padding:3px 8px;
+  background:linear-gradient(180deg,var(--gold-bright),var(--gold-deep));
+  color:var(--ink);
+  border:1px solid var(--gold-deep);
+  text-transform:uppercase;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25);
+}
+.pos-badge.sb{background:linear-gradient(180deg,#e8b89c,#9a523a);border-color:#7a3a25;color:#220f08}
+.pos-badge.bb{background:linear-gradient(180deg,#e8a4a4,#9a3232);border-color:#741818;color:#fff5ee}
+
+/* Hole cards */
+.hole{
+  display:flex;gap:6px;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.6));
+}
+.hole .card,.hole .card-back{
+  width:56px;height:80px;
+}
+.hole.me .card{
+  width:78px;height:108px;
+  transform:translateY(2px);
+}
+.hole.opp{margin-top:-20px}
+
+/* Bet chip */
+.bet-chip{
+  position:absolute;
+  z-index:20;
+  width:54px;height:54px;border-radius:50%;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(circle at 35% 25%, var(--oxblood-bright), var(--oxblood) 70%, #2a0808 100%);
+  border:2px dashed var(--ivory-soft);
+  box-shadow:
+    0 0 0 1px var(--gold),
+    0 0 0 3px var(--ink),
+    0 0 0 4px var(--gold-deep),
+    0 12px 22px rgba(0,0,0,.6),
+    inset 0 0 0 4px rgba(0,0,0,.3);
+  font-family:'DM Serif Display',serif;
+  font-size:15px;color:var(--ivory);
+  text-shadow:0 1px 1px rgba(0,0,0,.6);
+}
+.bet-chip::before{
+  content:'';position:absolute;inset:8px;border-radius:50%;
+  background:radial-gradient(circle at 30% 25%,var(--oxblood-bright),#2a0606);
+  border:1px solid var(--gold);
+}
+.bet-chip span{position:relative;z-index:1}
+
+/* Action panel */
+.action{
+  position:fixed;
+  bottom:16px;left:50%;transform:translateX(-50%);
+  width:520px;
+  max-width:calc(100% - 32px);
+  background:
+    linear-gradient(180deg, rgba(20,12,6,.96) 0%, rgba(8,4,2,.98) 100%);
+  border:1px solid var(--gold);
+  padding:18px 20px 22px;
+  box-shadow:0 -10px 40px rgba(0,0,0,.7),inset 0 1px 0 rgba(212,168,73,.3);
+  z-index:30;
+}
+.action::before{
+  content:'';position:absolute;inset:4px;border:1px solid rgba(212,168,73,.35);
+  pointer-events:none;
+}
+.action-row{display:flex;gap:10px;margin-bottom:14px}
+.btn{
+  flex:1;
+  padding:14px 10px;
+  font-family:'Cinzel Decorative',serif;font-weight:700;
+  font-size:13px;letter-spacing:.32em;
+  border:1px solid var(--gold-deep);
+  background:transparent;
+  color:var(--ivory-soft);
+  cursor:pointer;
+  position:relative;
+  text-transform:uppercase;
+  transition:all .2s ease;
+}
+.btn:hover{border-color:var(--gold);color:var(--gold-bright)}
+.btn.primary{
+  background:linear-gradient(180deg,var(--oxblood-bright) 0%,var(--oxblood) 100%);
+  border-color:var(--gold);
+  color:var(--ivory);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+}
+.btn.primary:hover{
+  background:linear-gradient(180deg,#a32525 0%,#7c1818 100%);
+  color:var(--gold-bright);
+}
+.btn.secondary{background:rgba(212,168,73,.08)}
+.btn .small{display:block;font-size:9px;margin-top:3px;color:var(--rose);font-style:italic;font-weight:400;letter-spacing:.18em;font-family:'Cormorant Garamond',serif}
+
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.slider-label{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:12px;color:var(--rose);letter-spacing:.18em;text-transform:uppercase;
+  flex:1;
+}
+.slider-label b{
+  font-family:'DM Serif Display',serif;font-style:normal;font-weight:400;
+  color:var(--gold-bright);font-size:18px;letter-spacing:0;
+  margin-left:6px;
+}
+.slider-track{
+  flex:2;height:6px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(212,168,73,.4);
+  position:relative;cursor:pointer;
+}
+.slider-fill{
+  position:absolute;left:0;top:0;height:100%;width:62%;
+  background:linear-gradient(90deg,var(--gold-deep),var(--gold-bright));
+}
+.slider-thumb{
+  position:absolute;left:62%;top:50%;transform:translate(-50%,-50%);
+  width:18px;height:18px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,var(--gold-bright),var(--gold-deep));
+  border:1px solid var(--ink);
+  box-shadow:0 0 0 1px var(--gold);
+}
+.preset-row{display:flex;gap:6px}
+.preset{
+  flex:1;
+  padding:8px 0;
+  font-family:'Cinzel Decorative',serif;font-weight:700;
+  font-size:10px;letter-spacing:.2em;
+  background:transparent;
+  border:1px solid rgba(212,168,73,.4);
+  color:var(--ivory-soft);
+  cursor:pointer;
+}
+.preset:hover{color:var(--gold-bright);border-color:var(--gold)}
+
+/* ─── Layouts: 1v1 & 5p ─── */
+.layout{display:none}
+.layout.active{display:block}
+
+/* 1v1 — opponent top center, me bottom center */
+.l-1v1 .center{top:50%}
+.l-1v1 .seat-opp1{top:4%;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.l-1v1 .seat-opp1 .hole{order:1;margin-bottom:-22px}
+.l-1v1 .seat-opp1 .seat-card{order:2}
+.l-1v1 .seat-me{bottom:5%;left:50%;transform:translateX(-50%);align-items:center}
+.l-1v1 .seat-me .seat-card{order:1}
+.l-1v1 .seat-me .hole{order:2;margin-top:-22px}
+.l-1v1 .bet-1{top:29%;left:50%;transform:translateX(-50%)}
+.l-1v1 .bet-me{bottom:29%;left:50%;transform:translateX(-50%)}
+
+/* 5p layout — me bottom, 4 opps around */
+.l-5p .center{top:50%}
+.l-5p .seat-me{bottom:5%;left:50%;transform:translateX(-50%)}
+.l-5p .seat-opp1{top:3%;left:18%;transform:translateX(-50%)}
+.l-5p .seat-opp2{top:3%;left:50%;transform:translateX(-50%)}
+.l-5p .seat-opp3{top:3%;left:82%;transform:translateX(-50%)}
+.l-5p .seat-opp4{top:50%;right:-2%;transform:translateY(-50%)}
+.l-5p .seat-opp4{left:auto}
+.l-5p .seat-me .hole{margin-top:-22px}
+.l-5p .seat-opp1 .hole,
+.l-5p .seat-opp2 .hole,
+.l-5p .seat-opp3 .hole{margin-top:-22px}
+.l-5p .seat-opp1,.l-5p .seat-opp2,.l-5p .seat-opp3{display:flex;flex-direction:column;align-items:center}
+.l-5p .seat-opp1 .seat-card,.l-5p .seat-opp2 .seat-card,.l-5p .seat-opp3 .seat-card{order:2}
+.l-5p .seat-opp1 .hole,.l-5p .seat-opp2 .hole,.l-5p .seat-opp3 .hole{order:1}
+
+/* Bet chip positions for 5p */
+.l-5p .bet-1{top:32%;left:25%}
+.l-5p .bet-2{top:29%;left:50%;transform:translateX(-50%)}
+.l-5p .bet-3{top:32%;right:25%;left:auto}
+.l-5p .bet-4{top:50%;right:18%;left:auto}
+.l-5p .bet-me{bottom:29%;left:50%;transform:translateX(-50%)}
+
+/* mobile */
+@media(max-width:900px){
+  .frame{padding:18px 14px 200px}
+  .brand-text{font-size:16px;letter-spacing:.22em}
+  .brand-sub{font-size:11px}
+  .tabs a{padding:8px 14px;font-size:9px;letter-spacing:.22em}
+  .stage span.txt{display:none}
+  .seat-card{min-width:170px;padding:9px 12px;gap:10px}
+  .avatar-frame{width:46px;height:46px;padding:2px}
+  .avatar{font-size:18px}
+  .seat-name{font-size:10px}
+  .seat-chips{font-size:16px}
+  .pos-badge{font-size:8px;padding:2px 6px}
+  .card,.card-back,.card-empty{width:50px;height:70px}
+  .card .corner .r{font-size:13px}
+  .card .corner .s{font-size:10px}
+  .card .pip{font-size:28px}
+  .hole .card,.hole .card-back{width:36px;height:50px}
+  .hole.me .card{width:50px;height:70px}
+  .pot-amount{font-size:24px}
+  .bet-chip{width:42px;height:42px;font-size:12px}
+  .action{width:auto;left:8px;right:8px;transform:none;padding:12px 12px 14px}
+  .btn{font-size:10px;letter-spacing:.18em;padding:10px 6px}
+  .l-5p .seat-opp1{top:6%;left:14%}
+  .l-5p .seat-opp3{top:6%;left:86%}
+  .l-5p .seat-opp4{top:50%;right:-5%}
+}
+
+/* ─── Animations ─── */
+@keyframes shimmer{
+  0%,100%{filter:brightness(1)}
+  50%{filter:brightness(1.18)}
+}
+.seat-card.turn .pos-badge{animation:shimmer 2s ease-in-out infinite}
+@keyframes glow-pulse{
+  0%,100%{box-shadow:0 0 0 1px var(--gold-bright),0 0 32px rgba(241,210,122,.45),0 12px 30px rgba(0,0,0,.6)}
+  50%{box-shadow:0 0 0 1px var(--gold-bright),0 0 50px rgba(241,210,122,.7),0 12px 30px rgba(0,0,0,.6)}
+}
+.seat-card.turn{animation:glow-pulse 2.4s ease-in-out infinite}
+
+@keyframes deal{
+  from{opacity:0;transform:translateY(-30px) rotateZ(-15deg)}
+  to{opacity:1;transform:translateY(0) rotateZ(0)}
+}
+.community .card{animation:deal .6s ease-out backwards}
+.community .card:nth-child(1){animation-delay:.1s}
+.community .card:nth-child(2){animation-delay:.25s}
+.community .card:nth-child(3){animation-delay:.4s}
+
+/* Decorative timer ring */
+.timer{
+  position:absolute;right:-78px;top:50%;transform:translateY(-50%);
+  width:62px;height:62px;
+  display:grid;place-items:center;
+}
+.timer svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.timer-num{
+  font-family:'DM Serif Display',serif;font-size:24px;
+  color:var(--gold-bright);
+  z-index:1;
+  text-shadow:0 0 12px rgba(241,210,122,.6);
+}
+.timer-label{
+  position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:9px;color:var(--rose);letter-spacing:.2em;text-transform:uppercase;
+  white-space:nowrap;
+}
+
+/* Footer note */
+.footnote{
+  position:fixed;bottom:8px;left:18px;
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:11px;color:rgba(230,185,160,.4);letter-spacing:.12em;
+  z-index:5;
+}
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <!-- ─── Masthead ─── -->
+  <header class="masthead">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L13.5 9L20 10.5L13.5 12L12 19L10.5 12L4 10.5L10.5 9L12 2Z" fill="#d4a849" stroke="#f1d27a" stroke-width=".5"/>
+          <circle cx="12" cy="10.5" r="1.5" fill="#f1d27a"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-text">POKER&nbsp;TITAN</div>
+        <div class="brand-sub">— maison de cartes — variant 01: casino royale —</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <a id="tab-1v1" class="active" onclick="showLayout('1v1')">1V1 · DUEL</a>
+      <a id="tab-5p" onclick="showLayout('5p')">5 · ROUND</a>
+    </div>
+  </header>
+
+  <div class="subline">
+    <span>SALON&nbsp;PRIVÉ&nbsp;·&nbsp;TABLE&nbsp;VII</span>
+    <span><em>Gold</em>&nbsp;Stakes&nbsp;·&nbsp;<em>Premier</em>&nbsp;Tournament</span>
+    <span>03 / V / MMXXVI</span>
+  </div>
+
+  <!-- ─── Stage indicator ─── -->
+  <div class="stagebar">
+    <span class="stage past"><span class="dot"></span><span class="txt">PRE-FLOP</span></span>
+    <span class="stage-sep"></span>
+    <span class="stage cur"><span class="dot"></span><span class="txt">FLOP</span></span>
+    <span class="stage-sep"></span>
+    <span class="stage"><span class="dot"></span><span class="txt">TURN</span></span>
+    <span class="stage-sep"></span>
+    <span class="stage"><span class="dot"></span><span class="txt">RIVER</span></span>
+    <span class="stage-sep"></span>
+    <span class="stage"><span class="dot"></span><span class="txt">SHOWDOWN</span></span>
+  </div>
+
+  <!-- ─── 1V1 LAYOUT ─── -->
+  <div class="layout active l-1v1" id="layout-1v1">
+    <div class="tablewrap">
+      <div class="table-frame">
+        <div class="table-felt">
+          <!-- Sunburst medallion -->
+          <svg class="medallion" viewBox="0 0 200 200" fill="none">
+            <g stroke="#d4a849" stroke-width=".5" fill="none">
+              <circle cx="100" cy="100" r="80"/>
+              <circle cx="100" cy="100" r="60"/>
+              <circle cx="100" cy="100" r="40"/>
+              <circle cx="100" cy="100" r="20"/>
+              <!-- Sunburst rays -->
+              <g>
+                <line x1="100" y1="20" x2="100" y2="40"/><line x1="100" y1="160" x2="100" y2="180"/>
+                <line x1="20" y1="100" x2="40" y2="100"/><line x1="160" y1="100" x2="180" y2="100"/>
+                <line x1="44" y1="44" x2="58" y2="58"/><line x1="142" y1="142" x2="156" y2="156"/>
+                <line x1="156" y1="44" x2="142" y2="58"/><line x1="58" y1="142" x2="44" y2="156"/>
+                <line x1="100" y1="40" x2="120" y2="60" stroke-dasharray="2 3"/>
+                <line x1="100" y1="40" x2="80" y2="60" stroke-dasharray="2 3"/>
+                <line x1="100" y1="160" x2="120" y2="140" stroke-dasharray="2 3"/>
+                <line x1="100" y1="160" x2="80" y2="140" stroke-dasharray="2 3"/>
+              </g>
+              <!-- Diamond corners -->
+              <g>
+                <path d="M100 60 L108 100 L100 140 L92 100 Z" fill="#d4a849" fill-opacity=".06"/>
+                <path d="M60 100 L100 92 L140 100 L100 108 Z" fill="#d4a849" fill-opacity=".06"/>
+              </g>
+              <!-- Center crown -->
+              <text x="100" y="106" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#d4a849" letter-spacing="2">PT</text>
+            </g>
+          </svg>
+          <div class="table-rail"></div>
+        </div>
+      </div>
+
+      <!-- Center: community + pot -->
+      <div class="center">
+        <div class="community">
+          <div class="card r"><div class="corner tl"><span class="r">Q</span><span class="s">♥</span></div><span class="pip">♥</span><div class="corner br"><span class="r">Q</span><span class="s">♥</span></div></div>
+          <div class="card r"><div class="corner tl"><span class="r">J</span><span class="s">♦</span></div><span class="pip">♦</span><div class="corner br"><span class="r">J</span><span class="s">♦</span></div></div>
+          <div class="card b"><div class="corner tl"><span class="r">7</span><span class="s">♣</span></div><span class="pip">♣</span><div class="corner br"><span class="r">7</span><span class="s">♣</span></div></div>
+          <div class="card-empty"></div>
+          <div class="card-empty"></div>
+        </div>
+        <div class="pot-frame">
+          <div class="pot-label">— LE POT —</div>
+          <div class="pot-amount">600<em>écus</em></div>
+        </div>
+      </div>
+
+      <!-- Opponent (top) -->
+      <div class="seat seat-opp1">
+        <div class="hole opp">
+          <div class="card-back"></div>
+          <div class="card-back"></div>
+        </div>
+        <div class="seat-card turn">
+          <div class="avatar-frame"><div class="avatar a3">K</div></div>
+          <div class="seat-info">
+            <div class="seat-name">КИРА · KIRA</div>
+            <div class="seat-chips">5,500<span class="unit">écus</span></div>
+            <div class="seat-meta"><span class="pos-badge">Dealer · SB</span></div>
+          </div>
+          <div class="timer">
+            <svg viewBox="0 0 62 62"><circle cx="31" cy="31" r="28" stroke="rgba(0,0,0,.5)" stroke-width="2" fill="none"/><circle cx="31" cy="31" r="28" stroke="#f1d27a" stroke-width="2" fill="none" stroke-dasharray="176" stroke-dashoffset="65" stroke-linecap="round"/></svg>
+            <span class="timer-num">18</span>
+            <span class="timer-label">sec</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Me (bottom) -->
+      <div class="seat seat-me">
+        <div class="seat-card">
+          <div class="avatar-frame"><div class="avatar a1">A</div></div>
+          <div class="seat-info">
+            <div class="seat-name me">VOUS · YOU</div>
+            <div class="seat-chips">4,500<span class="unit">écus</span></div>
+            <div class="seat-meta"><span class="pos-badge bb">Big Blind</span></div>
+          </div>
+        </div>
+        <div class="hole me">
+          <div class="card b"><div class="corner tl"><span class="r">A</span><span class="s">♠</span></div><span class="pip">♠</span><div class="corner br"><span class="r">A</span><span class="s">♠</span></div></div>
+          <div class="card r"><div class="corner tl"><span class="r">K</span><span class="s">♥</span></div><span class="pip">♥</span><div class="corner br"><span class="r">K</span><span class="s">♥</span></div></div>
+        </div>
+      </div>
+
+      <div class="bet-chip bet-1"><span>200</span></div>
+      <div class="bet-chip bet-me"><span>100</span></div>
+    </div>
+  </div>
+
+  <!-- ─── 5-PLAYER LAYOUT ─── -->
+  <div class="layout l-5p" id="layout-5p">
+    <div class="tablewrap">
+      <div class="table-frame">
+        <div class="table-felt">
+          <svg class="medallion" viewBox="0 0 200 200" fill="none">
+            <g stroke="#d4a849" stroke-width=".5" fill="none">
+              <circle cx="100" cy="100" r="80"/>
+              <circle cx="100" cy="100" r="60"/>
+              <circle cx="100" cy="100" r="40"/>
+              <circle cx="100" cy="100" r="20"/>
+              <g>
+                <line x1="100" y1="20" x2="100" y2="40"/><line x1="100" y1="160" x2="100" y2="180"/>
+                <line x1="20" y1="100" x2="40" y2="100"/><line x1="160" y1="100" x2="180" y2="100"/>
+                <line x1="44" y1="44" x2="58" y2="58"/><line x1="142" y1="142" x2="156" y2="156"/>
+                <line x1="156" y1="44" x2="142" y2="58"/><line x1="58" y1="142" x2="44" y2="156"/>
+              </g>
+              <g>
+                <path d="M100 60 L108 100 L100 140 L92 100 Z" fill="#d4a849" fill-opacity=".06"/>
+                <path d="M60 100 L100 92 L140 100 L100 108 Z" fill="#d4a849" fill-opacity=".06"/>
+              </g>
+              <text x="100" y="106" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#d4a849" letter-spacing="2">PT</text>
+            </g>
+          </svg>
+          <div class="table-rail"></div>
+        </div>
+      </div>
+
+      <div class="center">
+        <div class="community">
+          <div class="card r"><div class="corner tl"><span class="r">Q</span><span class="s">♥</span></div><span class="pip">♥</span><div class="corner br"><span class="r">Q</span><span class="s">♥</span></div></div>
+          <div class="card r"><div class="corner tl"><span class="r">J</span><span class="s">♦</span></div><span class="pip">♦</span><div class="corner br"><span class="r">J</span><span class="s">♦</span></div></div>
+          <div class="card b"><div class="corner tl"><span class="r">7</span><span class="s">♣</span></div><span class="pip">♣</span><div class="corner br"><span class="r">7</span><span class="s">♣</span></div></div>
+          <div class="card-empty"></div>
+          <div class="card-empty"></div>
+        </div>
+        <div class="pot-frame">
+          <div class="pot-label">— LE POT —</div>
+          <div class="pot-amount">980<em>écus</em></div>
+        </div>
+      </div>
+
+      <!-- Opp 1 (top-left) -->
+      <div class="seat seat-opp1">
+        <div class="hole opp"><div class="card-back"></div><div class="card-back"></div></div>
+        <div class="seat-card">
+          <div class="avatar-frame"><div class="avatar a2">N</div></div>
+          <div class="seat-info">
+            <div class="seat-name">НИКОЛАС</div>
+            <div class="seat-chips">4,200<span class="unit">écus</span></div>
+            <div class="seat-meta"><span class="pos-badge">Dealer</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opp 2 (top center, current turn) -->
+      <div class="seat seat-opp2">
+        <div class="hole opp"><div class="card-back"></div><div class="card-back"></div></div>
+        <div class="seat-card turn">
+          <div class="avatar-frame"><div class="avatar a3">K</div></div>
+          <div class="seat-info">
+            <div class="seat-name">КИРА · KIRA</div>
+            <div class="seat-chips">5,500<span class="unit">écus</span></div>
+            <div class="seat-meta"><span style="color:var(--gold-bright);font-weight:600">acting…</span></div>
+          </div>
+          <div class="timer">
+            <svg viewBox="0 0 62 62"><circle cx="31" cy="31" r="28" stroke="rgba(0,0,0,.5)" stroke-width="2" fill="none"/><circle cx="31" cy="31" r="28" stroke="#f1d27a" stroke-width="2" fill="none" stroke-dasharray="176" stroke-dashoffset="65" stroke-linecap="round"/></svg>
+            <span class="timer-num">14</span>
+            <span class="timer-label">sec</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opp 3 (top-right) -->
+      <div class="seat seat-opp3">
+        <div class="hole opp"><div class="card-back"></div><div class="card-back"></div></div>
+        <div class="seat-card folded">
+          <div class="avatar-frame"><div class="avatar a4">Z</div></div>
+          <div class="seat-info">
+            <div class="seat-name">ЗАРА</div>
+            <div class="seat-chips">3,800<span class="unit">écus</span></div>
+            <div class="seat-meta"><em style="color:var(--rose);font-style:italic">— passé —</em></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opp 4 (right side) -->
+      <div class="seat seat-opp4">
+        <div class="seat-card">
+          <div class="avatar-frame"><div class="avatar a5">O</div></div>
+          <div class="seat-info">
+            <div class="seat-name">ОМАР</div>
+            <div class="seat-chips">6,800<span class="unit">écus</span></div>
+            <div class="seat-meta"><span class="pos-badge sb">SM Blind</span></div>
+          </div>
+        </div>
+        <div class="hole opp" style="margin-top:-22px"><div class="card-back"></div><div class="card-back"></div></div>
+      </div>
+
+      <!-- Me -->
+      <div class="seat seat-me">
+        <div class="seat-card">
+          <div class="avatar-frame"><div class="avatar a1">A</div></div>
+          <div class="seat-info">
+            <div class="seat-name me">VOUS · YOU</div>
+            <div class="seat-chips">3,200<span class="unit">écus</span></div>
+            <div class="seat-meta"><span class="pos-badge bb">Big Blind</span></div>
+          </div>
+        </div>
+        <div class="hole me">
+          <div class="card b"><div class="corner tl"><span class="r">A</span><span class="s">♠</span></div><span class="pip">♠</span><div class="corner br"><span class="r">A</span><span class="s">♠</span></div></div>
+          <div class="card r"><div class="corner tl"><span class="r">K</span><span class="s">♥</span></div><span class="pip">♥</span><div class="corner br"><span class="r">K</span><span class="s">♥</span></div></div>
+        </div>
+      </div>
+
+      <div class="bet-chip bet-1"><span>50</span></div>
+      <div class="bet-chip bet-2"><span>200</span></div>
+      <div class="bet-chip bet-4"><span>100</span></div>
+      <div class="bet-chip bet-me"><span>200</span></div>
+    </div>
+  </div>
+
+  <!-- ─── Action panel (player's turn mock) ─── -->
+  <div class="action">
+    <div class="action-row">
+      <button class="btn">Fold<span class="small">se coucher</span></button>
+      <button class="btn secondary">Call · 100<span class="small">suivre</span></button>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">Mise <b>340</b></span>
+      <div class="slider-track">
+        <div class="slider-fill"></div>
+        <div class="slider-thumb"></div>
+      </div>
+    </div>
+    <div class="preset-row">
+      <button class="preset">½ Pot</button>
+      <button class="preset">¾ Pot</button>
+      <button class="preset">Pot</button>
+      <button class="preset">All-In</button>
+    </div>
+    <div style="height:10px"></div>
+    <button class="btn primary" style="width:100%;font-size:14px">Raise · 340 écus<span class="small" style="color:var(--gold-bright);margin-top:4px">— relancer —</span></button>
+  </div>
+
+</div>
+
+<div class="footnote">— variant 01: casino royale · maison&nbsp;de&nbsp;cartes —</div>
+
+<script>
+function showLayout(which){
+  document.querySelectorAll('.layout').forEach(l=>l.classList.remove('active'));
+  document.querySelectorAll('.tabs a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('layout-'+which).classList.add('active');
+  document.getElementById('tab-'+which).classList.add('active');
+}
+</script>
+</body>
+</html>

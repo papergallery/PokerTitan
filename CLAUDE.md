@@ -8,7 +8,7 @@
 ```
 /client      — React фронтенд (порт 5173)
 /server      — Node.js бэкенд (порт 3001)
-/deploy      — Docker, Nginx, инфраструктура
+/deploy      — Nginx-шаблоны и скрипты (Docker НЕ используется, см. ниже)
 /shared      — общие TypeScript типы
 ```
 
@@ -16,9 +16,47 @@
 - Frontend: React 18 + TypeScript + Vite + Tailwind + Framer Motion
 - Backend: Node.js + Fastify + Socket.io + PostgreSQL
 - Игровая логика: pokersolver (npm)
-- Деплой: Docker Compose, Nginx, сервер 185.70.184.239
+- Деплой: PM2 + Nginx напрямую на сервере (БЕЗ Docker), сервер 185.70.184.239
 
-## Воркфлоу: от задачи до git
+## Запуск, сборка, деплой (актуально на 2026-05-21)
+
+> ⚠️ Docker НЕ используется. `deploy/docker-compose*.yml` и `deploy/nginx/*.conf` —
+> устаревшие артефакты, оставлены как референс. Прод работает напрямую.
+
+- **Node-сервер**: PM2 под пользователем `paper`, имя процесса `pokertitan-server`,
+  слушает `127.0.0.1:3001`, запускает скомпилированный `server/dist/index.js`.
+- **Nginx**: `/etc/nginx/sites-enabled/pokertitan` — **источник истины** для конфига
+  (за ним haproxy SNI-роутер на `:8443`, HTTPS `pokertitan.pro` через certbot).
+  Шаблон `deploy/nginx-direct.conf` синхронизирован с live-конфигом 2026-05-21.
+- **PostgreSQL**: localhost, БД `pokertitan`, миграции применяются автоматически при старте.
+- **Секреты**: только в `server/.env` и `deploy/.env` (не в git). Ротированы 2026-05-12.
+
+```bash
+# Сборка сервера
+cd /var/www/html/PokerTitan/server && npm run build
+
+# Сборка клиента (dist уходит в paper:paper, поэтому от пользователя paper)
+sudo -n rm -rf /var/www/html/PokerTitan/client/dist
+cd /var/www/html/PokerTitan/client && sudo -n -u paper npm run build
+
+# Перезапуск (заодно прогоняет миграции)
+sudo -n -u paper pm2 restart pokertitan-server
+
+# Здоровье
+curl -s http://localhost:3001/health
+```
+
+## Статус проекта (разработка свёрнута 2026-05-21)
+
+- Функционально готов. Серверные тесты: 75/75 проходят. Typecheck клиента и сервера — чисто.
+- Магазин (`/shop`): покупки премиума и рамок аватара намеренно отключены («СКОРО»),
+  платёжного бэкенда нет — это заглушки, а не недоделка.
+- Слабое тестовое покрытие: WebSocket-флоу игры и e2e-сценарии (lobby→queue→game) не покрыты.
+- Дизайн-эксперименты лежат в `design-variants/` (untracked), в продакшен не портировались.
+
+## Воркфлоу разработки (исторический — проект свёрнут)
+
+> Описание процесса, которым проект разрабатывался. Оставлено для справки.
 
 ### 1. Manager получает задачу от пользователя
 - Анализирует: это фича, баг или инфраструктурная задача?
@@ -62,7 +100,9 @@ git push origin main
 
 ### 7. Infrastructure Agent деплоит на сервер
 ```bash
-sudo docker compose -f /var/www/html/PokerTitan/deploy/docker-compose.http.yml up -d --build
+# Без Docker — сборка + рестарт PM2 (см. раздел «Запуск, сборка, деплой» выше)
+cd /var/www/html/PokerTitan/server && npm run build
+sudo -n -u paper pm2 restart pokertitan-server
 ```
 
 ## Агенты

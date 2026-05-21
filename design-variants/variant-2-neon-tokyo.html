@@ -1,0 +1,1048 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Neon Tokyo — PokerTitan Variant 02</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bruno+Ace+SC&family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#04041a;
+  --bg-1:#0a0a24;
+  --bg-2:#11113a;
+  --violet:#5a1ed4;
+  --violet-deep:#2a0a7a;
+  --magenta:#ff2b95;
+  --magenta-bright:#ff5cb3;
+  --cyan:#00e5ff;
+  --cyan-bright:#5cf2ff;
+  --acid:#9dff5d;
+  --orange:#ff6c1a;
+  --white:#e8eaff;
+  --grey:#7a7e9c;
+  --line:rgba(0,229,255,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Chakra Petch',sans-serif;
+  font-weight:400;
+  color:var(--white);
+  background:#04041a;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(255,43,149,.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(0,229,255,.1) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 50%, var(--bg-1) 0%, var(--bg-0) 80%);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+}
+
+/* Scanlines */
+body::before{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg, rgba(0,229,255,.025) 0 1px, transparent 1px 3px);
+  pointer-events:none;z-index:100;
+  mix-blend-mode:overlay;
+}
+/* Vignette */
+body::after{
+  content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,.5) 100%);
+  pointer-events:none;z-index:99;
+}
+
+/* Floor grid */
+.floor{
+  position:fixed;
+  bottom:-50%;left:-20%;right:-20%;height:100%;
+  background-image:
+    linear-gradient(rgba(255,43,149,.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,.4) 1px, transparent 1px);
+  background-size:60px 60px;
+  transform:perspective(800px) rotateX(72deg);
+  transform-origin:50% 100%;
+  pointer-events:none;
+  z-index:0;
+  mask-image:linear-gradient(180deg, transparent 0%, black 30%, black 100%);
+  opacity:.4;
+}
+.floor::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 100%, rgba(255,43,149,.4) 0%, transparent 60%);
+}
+
+/* ─── Page chrome ─── */
+.frame{
+  max-width:1480px;margin:0 auto;
+  padding:20px 28px 220px;
+  position:relative;z-index:5;
+}
+
+.hud{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:24px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:18px;position:relative;
+}
+.hud::after{
+  content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg, transparent, var(--magenta) 30%, var(--cyan) 70%, transparent);
+  filter:blur(1px);
+  opacity:.7;
+}
+
+.brand-block{
+  display:flex;align-items:center;gap:18px;
+}
+.brand-glyph{
+  width:54px;height:54px;
+  position:relative;
+  background:linear-gradient(135deg, var(--violet) 0%, var(--magenta) 100%);
+  clip-path:polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%);
+  display:grid;place-items:center;
+  filter:drop-shadow(0 0 18px rgba(255,43,149,.5));
+}
+.brand-glyph::before{
+  content:'';position:absolute;inset:2px;
+  background:var(--bg-0);
+  clip-path:polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%);
+}
+.brand-glyph svg{position:relative;z-index:1;width:28px;height:28px}
+.brand-name{
+  font-family:'Bruno Ace SC', sans-serif;
+  font-size:24px;letter-spacing:.18em;
+  background:linear-gradient(90deg, var(--cyan) 0%, var(--magenta) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 26px rgba(0,229,255,.4);
+  line-height:1;
+}
+.brand-tagline{
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;color:var(--grey);
+  letter-spacing:.18em;margin-top:4px;
+  text-transform:uppercase;
+}
+.brand-tagline em{color:var(--cyan);font-style:normal}
+
+.hud-stats{
+  display:flex;gap:16px;align-items:center;
+}
+.stat{
+  font-family:'Share Tech Mono',monospace;
+  display:flex;flex-direction:column;
+  padding:8px 16px;
+  border:1px solid var(--line);
+  background:rgba(0,229,255,.04);
+  position:relative;
+}
+.stat::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(0,229,255,.08), transparent);
+  pointer-events:none;
+}
+.stat-label{
+  font-size:9px;color:var(--cyan-bright);letter-spacing:.2em;text-transform:uppercase;
+}
+.stat-value{
+  font-family:'Bruno Ace SC',sans-serif;
+  font-size:20px;color:var(--white);letter-spacing:.04em;
+}
+.stat-value.mag{color:var(--magenta-bright)}
+
+.tabs{
+  display:flex;gap:2px;
+  background:rgba(0,0,0,.4);
+  border:1px solid var(--line);
+  padding:2px;
+}
+.tabs a{
+  padding:11px 22px;
+  font-family:'Bruno Ace SC',sans-serif;
+  font-size:11px;
+  letter-spacing:.32em;
+  color:var(--grey);
+  text-decoration:none;
+  cursor:pointer;
+  position:relative;
+  text-transform:uppercase;
+  background:transparent;
+  border:none;
+  transition:all .2s;
+}
+.tabs a:hover{color:var(--cyan-bright)}
+.tabs a.active{
+  background:linear-gradient(135deg, var(--violet-deep) 0%, var(--magenta) 100%);
+  color:var(--white);
+  text-shadow:0 0 12px rgba(255,255,255,.5);
+  box-shadow:
+    0 0 24px rgba(255,43,149,.5),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+/* ─── Stage indicator ─── */
+.phase-bar{
+  margin-top:24px;
+  display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;
+}
+.phase-meta{
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;color:var(--grey);letter-spacing:.18em;
+  text-transform:uppercase;
+}
+.phase-meta b{color:var(--cyan-bright);font-weight:400}
+
+.phase-track{
+  display:flex;gap:0;height:32px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.3);
+  position:relative;
+}
+.phase{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;letter-spacing:.18em;
+  color:var(--grey);
+  border-right:1px solid var(--line);
+  position:relative;
+}
+.phase:last-child{border-right:none}
+.phase.past{color:rgba(255,43,149,.6);background:rgba(255,43,149,.04)}
+.phase.cur{
+  color:var(--white);
+  background:linear-gradient(180deg, rgba(0,229,255,.18) 0%, rgba(0,229,255,.04) 100%);
+}
+.phase.cur::before{
+  content:'';position:absolute;inset:0;
+  border:1px solid var(--cyan);
+  box-shadow:inset 0 0 18px rgba(0,229,255,.3);
+}
+.phase .num{
+  font-family:'Bruno Ace SC',sans-serif;
+  color:inherit;font-size:13px;
+}
+.phase.cur .num{color:var(--cyan-bright);text-shadow:0 0 12px var(--cyan)}
+
+.phase-meta.right{text-align:right}
+
+/* ─── Table area ─── */
+.tablewrap{
+  position:relative;
+  height:760px;
+  margin:32px auto 0;
+  display:grid;
+  place-items:center;
+}
+@media(max-width:900px){.tablewrap{height:680px}}
+
+/* Hexagonal table */
+.table-frame{
+  position:absolute;
+  width:100%;max-width:1280px;
+  aspect-ratio:16/9;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(90,30,212,.18) 0%, rgba(10,10,36,.8) 60%),
+    linear-gradient(180deg, rgba(0,0,0,.4) 0%, rgba(0,0,0,.85) 100%);
+  clip-path:polygon(8% 0%, 92% 0%, 100% 50%, 92% 100%, 8% 100%, 0% 50%);
+  border:1px solid var(--cyan);
+  position:relative;
+}
+@media(max-width:900px){.table-frame{aspect-ratio:5/7;max-width:540px}}
+
+.table-frame::before{
+  content:'';position:absolute;inset:8px;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(0,229,255,.06), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(0,229,255,.03) 0 2px, transparent 2px 5px);
+  clip-path:polygon(8% 0%, 92% 0%, 100% 50%, 92% 100%, 8% 100%, 0% 50%);
+}
+.table-frame::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg, transparent 30%, rgba(255,43,149,.25) 50%, transparent 70%);
+  clip-path:polygon(8% 0%, 92% 0%, 100% 50%, 92% 100%, 8% 100%, 0% 50%);
+  mix-blend-mode:screen;
+  pointer-events:none;
+  animation:sweep 6s ease-in-out infinite;
+  opacity:.4;
+}
+@keyframes sweep{
+  0%,100%{transform:translate(0,0)}
+  50%{transform:translate(20%,0)}
+}
+
+/* Outer glow ring */
+.table-glow{
+  position:absolute;width:100%;max-width:1280px;aspect-ratio:16/9;
+  clip-path:polygon(8% 0%, 92% 0%, 100% 50%, 92% 100%, 8% 100%, 0% 50%);
+  pointer-events:none;
+  filter:blur(30px);
+  background:linear-gradient(135deg, var(--magenta) 0%, var(--violet) 50%, var(--cyan) 100%);
+  opacity:.25;
+}
+@media(max-width:900px){.table-glow{aspect-ratio:5/7;max-width:540px}}
+
+/* Hex tech overlays */
+.hex-corner{
+  position:absolute;width:160px;height:160px;
+  border:1px solid var(--cyan);
+  pointer-events:none;
+  opacity:.4;
+}
+.hex-corner.tl{top:-1px;left:8%;border-right:none;border-bottom:none;width:80px;height:60px}
+.hex-corner.tr{top:-1px;right:8%;border-left:none;border-bottom:none;width:80px;height:60px}
+.hex-corner.bl{bottom:-1px;left:8%;border-right:none;border-top:none;width:80px;height:60px}
+.hex-corner.br{bottom:-1px;right:8%;border-left:none;border-top:none;width:80px;height:60px}
+
+/* Center HUD */
+.center{
+  position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  z-index:5;
+}
+.community{
+  display:flex;gap:6px;
+  filter:drop-shadow(0 0 26px rgba(0,229,255,.3));
+}
+
+/* Cards — holographic */
+.card{
+  width:78px;height:108px;
+  position:relative;
+  background:linear-gradient(135deg, #fafdff 0%, #f0f5ff 50%, #ffffff 100%);
+  border:1px solid var(--cyan);
+  font-family:'Bruno Ace SC',sans-serif;
+  box-shadow:
+    0 0 0 1px rgba(0,229,255,.5),
+    0 0 18px rgba(0,229,255,.4),
+    0 8px 24px rgba(0,0,0,.6);
+  overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg, rgba(0,229,255,.18) 0%, transparent 30%, rgba(255,43,149,.18) 100%);
+  pointer-events:none;
+}
+.card::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,0,0,.06) 2px 3px);
+  pointer-events:none;
+  mix-blend-mode:multiply;
+}
+.card .corner{
+  position:absolute;display:flex;flex-direction:column;align-items:center;
+  line-height:.95;z-index:1;
+}
+.card .corner.tl{top:6px;left:7px}
+.card .corner.br{bottom:6px;right:7px;transform:rotate(180deg)}
+.card .corner .r{font-size:18px;letter-spacing:0}
+.card .corner .s{font-size:13px;margin-top:1px}
+.card .pip{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-family:'Chakra Petch',sans-serif;
+  font-size:42px;font-weight:700;
+  z-index:1;
+}
+.card.r{color:var(--magenta)}
+.card.b{color:#0a0a24}
+
+.card-back{
+  width:78px;height:108px;
+  position:relative;
+  background:
+    linear-gradient(135deg, var(--violet-deep) 0%, var(--bg-0) 50%, var(--violet-deep) 100%);
+  border:1px solid var(--magenta);
+  box-shadow:
+    0 0 0 1px rgba(255,43,149,.4),
+    0 0 18px rgba(255,43,149,.4),
+    0 8px 24px rgba(0,0,0,.6),
+    inset 0 0 24px rgba(255,43,149,.18);
+  overflow:hidden;
+}
+.card-back::before{
+  content:'';position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 4px, rgba(255,43,149,.18) 4px 5px),
+    repeating-linear-gradient(-45deg, transparent 0 4px, rgba(0,229,255,.12) 4px 5px);
+}
+.card-back::after{
+  content:'PT';
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-family:'Bruno Ace SC',sans-serif;
+  font-size:24px;letter-spacing:.1em;
+  color:var(--cyan-bright);
+  text-shadow:0 0 14px var(--cyan), 0 0 26px var(--magenta);
+}
+.card-empty{
+  width:78px;height:108px;
+  border:1px dashed rgba(0,229,255,.25);
+  background:rgba(0,229,255,.03);
+  position:relative;
+}
+.card-empty::before{
+  content:'??';
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-family:'Share Tech Mono',monospace;
+  font-size:14px;color:rgba(0,229,255,.25);letter-spacing:.1em;
+}
+
+/* Pot block */
+.pot{
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--cyan);
+  padding:10px 22px 12px;
+  position:relative;
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 0 24px rgba(0,229,255,.3);
+}
+.pot::before{
+  content:'';position:absolute;left:-1px;top:-1px;width:12px;height:12px;
+  border-top:2px solid var(--magenta);border-left:2px solid var(--magenta);
+}
+.pot::after{
+  content:'';position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;
+  border-bottom:2px solid var(--magenta);border-right:2px solid var(--magenta);
+}
+.pot-label{
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;color:var(--cyan-bright);letter-spacing:.32em;
+  text-transform:uppercase;
+}
+.pot-amount{
+  font-family:'Bruno Ace SC',sans-serif;
+  font-size:32px;color:var(--white);letter-spacing:.05em;
+  line-height:1;
+  text-shadow:0 0 18px rgba(0,229,255,.6);
+}
+.pot-amount em{
+  font-style:normal;font-size:14px;color:var(--magenta-bright);margin-left:4px;
+  font-family:'Share Tech Mono',monospace;
+}
+
+/* ─── Player seat ─── */
+.seat{
+  position:absolute;display:flex;flex-direction:column;align-items:center;gap:10px;
+  z-index:6;
+}
+.seat-card{
+  position:relative;
+  background:
+    linear-gradient(135deg, rgba(10,10,36,.92) 0%, rgba(26,10,58,.85) 100%);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid var(--cyan);
+  padding:12px 16px 12px 12px;
+  display:flex;align-items:center;gap:12px;
+  min-width:230px;
+  box-shadow:
+    0 0 24px rgba(0,229,255,.18),
+    0 12px 30px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(0,229,255,.18);
+  clip-path:polygon(8% 0%, 100% 0%, 100% 100%, 8% 100%, 0% 50%);
+}
+.seat-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg, rgba(0,229,255,.05) 0%, transparent 50%, rgba(255,43,149,.05) 100%);
+  pointer-events:none;
+}
+.seat-card.turn{
+  border-color:var(--magenta);
+  box-shadow:
+    0 0 36px rgba(255,43,149,.5),
+    0 0 0 1px var(--magenta),
+    inset 0 1px 0 rgba(255,43,149,.3);
+}
+.seat-card.folded{opacity:.3;filter:saturate(.3)}
+
+.avatar-frame{
+  width:54px;height:54px;
+  position:relative;
+  background:linear-gradient(135deg, var(--magenta) 0%, var(--cyan) 100%);
+  clip-path:polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%);
+  display:grid;place-items:center;
+  flex-shrink:0;
+  filter:drop-shadow(0 0 12px rgba(0,229,255,.4));
+}
+.avatar-frame::before{
+  content:'';position:absolute;inset:2px;
+  background:var(--bg-0);
+  clip-path:polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%);
+}
+.avatar{
+  width:100%;height:100%;
+  display:grid;place-items:center;
+  font-family:'Bruno Ace SC',sans-serif;font-size:22px;
+  position:relative;z-index:1;
+  letter-spacing:0;
+}
+.avatar.a1{color:var(--cyan-bright)}
+.avatar.a2{color:var(--magenta-bright)}
+.avatar.a3{color:var(--acid)}
+.avatar.a4{color:var(--orange)}
+.avatar.a5{color:#c5a4ff}
+
+.seat-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.seat-name{
+  font-family:'Bruno Ace SC',sans-serif;
+  font-size:11px;letter-spacing:.16em;color:var(--white);
+  text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.seat-name.me{
+  background:linear-gradient(90deg, var(--cyan) 0%, var(--magenta) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.seat-chips{
+  font-family:'Bruno Ace SC',sans-serif;
+  font-size:18px;color:var(--cyan-bright);letter-spacing:.04em;
+  line-height:1;text-shadow:0 0 8px rgba(0,229,255,.5);
+}
+.seat-chips em{
+  font-family:'Share Tech Mono',monospace;
+  font-style:normal;font-size:9px;color:var(--grey);margin-left:4px;letter-spacing:.18em;
+}
+.seat-meta{
+  display:flex;gap:5px;align-items:center;margin-top:3px;
+}
+.pos-badge{
+  font-family:'Share Tech Mono',monospace;
+  font-size:9px;letter-spacing:.18em;
+  padding:2px 6px;
+  background:rgba(0,229,255,.12);
+  border:1px solid var(--cyan);
+  color:var(--cyan-bright);
+  text-transform:uppercase;
+}
+.pos-badge.sb{background:rgba(157,255,93,.12);border-color:var(--acid);color:var(--acid)}
+.pos-badge.bb{background:rgba(255,43,149,.12);border-color:var(--magenta);color:var(--magenta-bright)}
+
+/* Hole cards */
+.hole{display:flex;gap:5px}
+.hole .card,.hole .card-back{width:54px;height:76px}
+.hole.me .card{width:78px;height:108px}
+.hole.me .card .corner .r{font-size:18px}
+.hole.me .card .pip{font-size:42px}
+.hole.opp .card-back::after{font-size:16px}
+
+/* Bet chip */
+.bet-chip{
+  position:absolute;
+  z-index:20;
+  width:54px;height:54px;
+  display:grid;place-items:center;
+  font-family:'Bruno Ace SC',sans-serif;
+  font-size:13px;color:var(--white);letter-spacing:.04em;
+  background:linear-gradient(135deg, var(--magenta) 0%, var(--violet) 100%);
+  clip-path:polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%);
+  filter:drop-shadow(0 0 12px rgba(255,43,149,.5));
+}
+.bet-chip::before{
+  content:'';position:absolute;inset:2px;
+  background:var(--bg-0);
+  clip-path:polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%);
+}
+.bet-chip span{
+  position:relative;z-index:1;
+  background:linear-gradient(90deg, var(--cyan) 0%, var(--magenta) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:none;
+  font-family:'Bruno Ace SC',sans-serif;
+}
+.bet-chip span::before{
+  content:'¢';
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;
+  margin-right:2px;
+  -webkit-text-fill-color:var(--cyan-bright);
+}
+
+/* Timer */
+.timer{
+  position:absolute;right:-72px;top:50%;transform:translateY(-50%);
+  width:54px;height:54px;
+  display:grid;place-items:center;
+}
+.timer svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.timer-num{
+  font-family:'Bruno Ace SC',sans-serif;
+  font-size:20px;color:var(--magenta-bright);
+  text-shadow:0 0 12px var(--magenta);
+  z-index:1;
+}
+
+/* Action panel */
+.action{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  width:560px;max-width:calc(100% - 32px);
+  background:rgba(4,4,26,.92);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--cyan);
+  padding:18px 18px 20px;
+  z-index:30;
+  box-shadow:
+    0 0 36px rgba(0,229,255,.3),
+    0 -10px 40px rgba(0,0,0,.7),
+    inset 0 1px 0 rgba(0,229,255,.18);
+}
+.action::before{
+  content:'';position:absolute;left:-1px;top:-1px;width:14px;height:14px;
+  border-top:2px solid var(--magenta);border-left:2px solid var(--magenta);
+}
+.action::after{
+  content:'';position:absolute;right:-1px;bottom:-1px;width:14px;height:14px;
+  border-bottom:2px solid var(--magenta);border-right:2px solid var(--magenta);
+}
+.action-header{
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;color:var(--cyan-bright);letter-spacing:.2em;
+  margin-bottom:10px;text-transform:uppercase;
+}
+.action-header b{color:var(--magenta-bright);font-weight:400}
+
+.action-row{display:flex;gap:8px;margin-bottom:12px}
+.btn{
+  flex:1;
+  padding:14px 8px;
+  font-family:'Bruno Ace SC',sans-serif;
+  font-size:12px;letter-spacing:.22em;
+  background:transparent;
+  color:var(--cyan-bright);
+  border:1px solid var(--cyan);
+  cursor:pointer;
+  position:relative;
+  text-transform:uppercase;
+  transition:all .2s;
+  clip-path:polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
+}
+.btn:hover{
+  background:rgba(0,229,255,.1);
+  color:var(--white);
+  text-shadow:0 0 12px var(--cyan);
+}
+.btn.danger{
+  color:var(--magenta-bright);border-color:var(--magenta);
+}
+.btn.danger:hover{background:rgba(255,43,149,.1)}
+.btn.primary{
+  background:linear-gradient(90deg, var(--magenta) 0%, var(--violet) 100%);
+  color:var(--white);
+  border-color:var(--magenta);
+  box-shadow:
+    0 0 24px rgba(255,43,149,.5),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+.btn.primary:hover{
+  background:linear-gradient(90deg, var(--magenta-bright) 0%, #7a3aff 100%);
+}
+.btn .small{
+  display:block;font-family:'Share Tech Mono',monospace;
+  font-size:9px;color:var(--grey);margin-top:3px;letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.btn.primary .small{color:rgba(255,255,255,.6)}
+
+.slider-row{display:flex;align-items:center;gap:14px;margin:14px 0}
+.slider-meta{
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;color:var(--cyan-bright);letter-spacing:.18em;
+  text-transform:uppercase;
+}
+.slider-meta b{
+  font-family:'Bruno Ace SC',sans-serif;font-weight:400;
+  color:var(--white);font-size:18px;letter-spacing:.04em;
+  margin-left:4px;
+}
+.slider-track{
+  flex:1;height:8px;
+  background:rgba(0,0,0,.5);
+  border:1px solid var(--cyan);
+  position:relative;
+}
+.slider-fill{
+  position:absolute;left:0;top:0;height:100%;width:62%;
+  background:linear-gradient(90deg, var(--cyan) 0%, var(--magenta) 100%);
+  box-shadow:0 0 12px rgba(0,229,255,.5);
+}
+.slider-thumb{
+  position:absolute;left:62%;top:50%;transform:translate(-50%,-50%);
+  width:20px;height:20px;
+  background:var(--bg-0);
+  border:2px solid var(--magenta);
+  box-shadow:0 0 12px var(--magenta);
+}
+
+.preset-row{display:flex;gap:6px}
+.preset{
+  flex:1;
+  padding:8px 0;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;letter-spacing:.18em;
+  background:transparent;
+  border:1px solid var(--line);
+  color:var(--grey);
+  cursor:pointer;
+  text-transform:uppercase;
+}
+.preset:hover{color:var(--cyan-bright);border-color:var(--cyan)}
+.preset.active{color:var(--magenta-bright);border-color:var(--magenta);background:rgba(255,43,149,.06)}
+
+/* ─── Layouts ─── */
+.layout{display:none}
+.layout.active{display:block}
+
+/* 1v1 */
+.l-1v1 .center{top:50%}
+.l-1v1 .seat-opp1{top:4%;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.l-1v1 .seat-opp1 .seat-card{order:2}
+.l-1v1 .seat-opp1 .hole{order:1;margin-bottom:-22px}
+.l-1v1 .seat-me{bottom:5%;left:50%;transform:translateX(-50%)}
+.l-1v1 .seat-me .hole{margin-top:-22px}
+.l-1v1 .bet-1{top:29%;left:50%;transform:translateX(-50%)}
+.l-1v1 .bet-me{bottom:29%;left:50%;transform:translateX(-50%)}
+
+/* 5p */
+.l-5p .center{top:50%}
+.l-5p .seat-me{bottom:6%;left:50%;transform:translateX(-50%)}
+.l-5p .seat-opp1{top:3%;left:18%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.l-5p .seat-opp2{top:3%;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.l-5p .seat-opp3{top:3%;left:82%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center}
+.l-5p .seat-opp4{top:50%;right:1%;transform:translateY(-50%)}
+.l-5p .seat-opp1 .seat-card,.l-5p .seat-opp2 .seat-card,.l-5p .seat-opp3 .seat-card{order:2}
+.l-5p .seat-opp1 .hole,.l-5p .seat-opp2 .hole,.l-5p .seat-opp3 .hole{order:1;margin-bottom:-22px}
+.l-5p .seat-opp4 .hole{margin-top:-22px}
+.l-5p .seat-me .hole{margin-top:-22px}
+.l-5p .bet-1{top:32%;left:25%}
+.l-5p .bet-2{top:29%;left:50%;transform:translateX(-50%)}
+.l-5p .bet-3{top:32%;right:25%;left:auto}
+.l-5p .bet-4{top:50%;right:18%;left:auto}
+.l-5p .bet-me{bottom:29%;left:50%;transform:translateX(-50%)}
+
+/* mobile */
+@media(max-width:900px){
+  .frame{padding:14px 10px 250px}
+  .brand-name{font-size:18px;letter-spacing:.12em}
+  .hud{flex-direction:column;align-items:stretch}
+  .hud-stats{flex-wrap:wrap;justify-content:flex-start}
+  .stat{padding:6px 10px}
+  .stat-value{font-size:14px}
+  .tabs a{padding:8px 12px;font-size:9px;letter-spacing:.18em}
+  .phase{font-size:8px}
+  .phase .num{font-size:11px}
+  .seat-card{min-width:160px;padding:8px 12px;gap:8px}
+  .avatar-frame{width:42px;height:42px}
+  .avatar{font-size:16px}
+  .seat-name{font-size:9px}
+  .seat-chips{font-size:14px}
+  .pos-badge{font-size:8px;padding:1px 5px}
+  .card,.card-back,.card-empty{width:50px;height:70px}
+  .card .pip{font-size:26px}
+  .card .corner .r{font-size:13px}
+  .card .corner .s{font-size:10px}
+  .hole .card,.hole .card-back{width:36px;height:50px}
+  .hole.me .card{width:50px;height:70px}
+  .hole.me .card .pip{font-size:26px}
+  .hole.me .card .corner .r{font-size:13px}
+  .pot-amount{font-size:22px}
+  .bet-chip{width:42px;height:42px;font-size:11px}
+  .action{width:auto;left:8px;right:8px;transform:none;padding:12px}
+  .btn{font-size:10px;letter-spacing:.14em;padding:10px 4px}
+  .l-5p .seat-opp1{top:6%;left:14%}
+  .l-5p .seat-opp3{top:6%;left:86%}
+  .l-5p .seat-opp4{top:48%;right:-3%}
+}
+
+/* Glitch effect for current turn */
+@keyframes flicker{
+  0%,90%,100%{opacity:1}
+  92%{opacity:.8}
+  94%{opacity:1}
+  96%{opacity:.6}
+  98%{opacity:1}
+}
+.seat-card.turn .seat-name{animation:flicker 4s infinite}
+@keyframes pulse-mag{
+  0%,100%{box-shadow:0 0 36px rgba(255,43,149,.5),0 0 0 1px var(--magenta),inset 0 1px 0 rgba(255,43,149,.3)}
+  50%{box-shadow:0 0 60px rgba(255,43,149,.8),0 0 0 2px var(--magenta-bright),inset 0 1px 0 rgba(255,43,149,.5)}
+}
+.seat-card.turn{animation:pulse-mag 2s ease-in-out infinite}
+
+@keyframes deal-in{
+  from{opacity:0;transform:translateY(-30px) rotateX(60deg)}
+  to{opacity:1;transform:translateY(0) rotateX(0)}
+}
+.community .card{animation:deal-in .6s ease-out backwards}
+.community .card:nth-child(1){animation-delay:.1s}
+.community .card:nth-child(2){animation-delay:.25s}
+.community .card:nth-child(3){animation-delay:.4s}
+
+.foot{
+  position:fixed;bottom:8px;left:18px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;color:rgba(122,126,156,.5);letter-spacing:.18em;
+  text-transform:uppercase;z-index:50;
+  pointer-events:none;
+}
+.foot b{color:var(--cyan-bright);font-weight:400}
+</style>
+</head>
+<body>
+
+<!-- Floor grid backdrop -->
+<div class="floor"></div>
+
+<div class="frame">
+
+  <!-- HUD -->
+  <header class="hud">
+    <div class="brand-block">
+      <div class="brand-glyph">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 12 L12 4 L20 12 L12 20 Z" stroke="#00e5ff" stroke-width="1.5"/>
+          <path d="M8 12 L12 8 L16 12 L12 16 Z" fill="#ff2b95"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">POKER//TITAN</div>
+        <div class="brand-tagline">SHIBUYA NODE · <em>v0.2 — neon tokyo</em></div>
+      </div>
+    </div>
+
+    <div class="hud-stats">
+      <div class="stat">
+        <span class="stat-label">PLAYERS</span>
+        <span class="stat-value" id="playerCount">2</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">BLINDS</span>
+        <span class="stat-value">50/100</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">PING</span>
+        <span class="stat-value mag">42ms</span>
+      </div>
+      <div class="tabs">
+        <a id="tab-1v1" class="active" onclick="showLayout('1v1')">DUEL.exe</a>
+        <a id="tab-5p" onclick="showLayout('5p')">5P.exe</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Phase track -->
+  <div class="phase-bar">
+    <div class="phase-meta">PHASE&nbsp;//&nbsp;<b>03&nbsp;OF&nbsp;05</b></div>
+    <div class="phase-track">
+      <div class="phase past"><span class="num">01</span>PRE-FLOP</div>
+      <div class="phase past"><span class="num">02</span>DEAL</div>
+      <div class="phase cur"><span class="num">03</span>FLOP</div>
+      <div class="phase"><span class="num">04</span>TURN</div>
+      <div class="phase"><span class="num">05</span>RIVER</div>
+    </div>
+    <div class="phase-meta right">SESS&nbsp;//&nbsp;<b>0x4F2A</b></div>
+  </div>
+
+  <!-- 1v1 LAYOUT -->
+  <div class="layout active l-1v1" id="layout-1v1">
+    <div class="tablewrap">
+      <div class="table-glow"></div>
+      <div class="table-frame">
+        <div class="hex-corner tl"></div>
+        <div class="hex-corner tr"></div>
+        <div class="hex-corner bl"></div>
+        <div class="hex-corner br"></div>
+      </div>
+
+      <div class="center">
+        <div class="community">
+          <div class="card r"><div class="corner tl"><span class="r">Q</span><span class="s">♥</span></div><span class="pip">♥</span><div class="corner br"><span class="r">Q</span><span class="s">♥</span></div></div>
+          <div class="card r"><div class="corner tl"><span class="r">J</span><span class="s">♦</span></div><span class="pip">♦</span><div class="corner br"><span class="r">J</span><span class="s">♦</span></div></div>
+          <div class="card b"><div class="corner tl"><span class="r">7</span><span class="s">♣</span></div><span class="pip">♣</span><div class="corner br"><span class="r">7</span><span class="s">♣</span></div></div>
+          <div class="card-empty"></div>
+          <div class="card-empty"></div>
+        </div>
+        <div class="pot">
+          <span class="pot-label">// POT</span>
+          <span class="pot-amount">600<em>¢</em></span>
+        </div>
+      </div>
+
+      <!-- Opp top -->
+      <div class="seat seat-opp1">
+        <div class="hole opp"><div class="card-back"></div><div class="card-back"></div></div>
+        <div class="seat-card turn">
+          <div class="avatar-frame"><div class="avatar a2">K</div></div>
+          <div class="seat-info">
+            <div class="seat-name">KIRA_77</div>
+            <div class="seat-chips">5,500<em>¢</em></div>
+            <div class="seat-meta"><span class="pos-badge">D · SB</span></div>
+          </div>
+          <div class="timer">
+            <svg viewBox="0 0 54 54"><circle cx="27" cy="27" r="24" stroke="rgba(0,0,0,.5)" stroke-width="2" fill="none"/><circle cx="27" cy="27" r="24" stroke="#ff2b95" stroke-width="2" fill="none" stroke-dasharray="151" stroke-dashoffset="58" stroke-linecap="round"/></svg>
+            <span class="timer-num">18</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Me bottom -->
+      <div class="seat seat-me">
+        <div class="seat-card">
+          <div class="avatar-frame"><div class="avatar a1">U</div></div>
+          <div class="seat-info">
+            <div class="seat-name me">USER//YOU</div>
+            <div class="seat-chips">4,500<em>¢</em></div>
+            <div class="seat-meta"><span class="pos-badge bb">BIG BLIND</span></div>
+          </div>
+        </div>
+        <div class="hole me">
+          <div class="card b"><div class="corner tl"><span class="r">A</span><span class="s">♠</span></div><span class="pip">♠</span><div class="corner br"><span class="r">A</span><span class="s">♠</span></div></div>
+          <div class="card r"><div class="corner tl"><span class="r">K</span><span class="s">♥</span></div><span class="pip">♥</span><div class="corner br"><span class="r">K</span><span class="s">♥</span></div></div>
+        </div>
+      </div>
+
+      <div class="bet-chip bet-1"><span>200</span></div>
+      <div class="bet-chip bet-me"><span>100</span></div>
+    </div>
+  </div>
+
+  <!-- 5P LAYOUT -->
+  <div class="layout l-5p" id="layout-5p">
+    <div class="tablewrap">
+      <div class="table-glow"></div>
+      <div class="table-frame">
+        <div class="hex-corner tl"></div>
+        <div class="hex-corner tr"></div>
+        <div class="hex-corner bl"></div>
+        <div class="hex-corner br"></div>
+      </div>
+
+      <div class="center">
+        <div class="community">
+          <div class="card r"><div class="corner tl"><span class="r">Q</span><span class="s">♥</span></div><span class="pip">♥</span><div class="corner br"><span class="r">Q</span><span class="s">♥</span></div></div>
+          <div class="card r"><div class="corner tl"><span class="r">J</span><span class="s">♦</span></div><span class="pip">♦</span><div class="corner br"><span class="r">J</span><span class="s">♦</span></div></div>
+          <div class="card b"><div class="corner tl"><span class="r">7</span><span class="s">♣</span></div><span class="pip">♣</span><div class="corner br"><span class="r">7</span><span class="s">♣</span></div></div>
+          <div class="card-empty"></div>
+          <div class="card-empty"></div>
+        </div>
+        <div class="pot">
+          <span class="pot-label">// POT</span>
+          <span class="pot-amount">980<em>¢</em></span>
+        </div>
+      </div>
+
+      <div class="seat seat-opp1">
+        <div class="hole opp"><div class="card-back"></div><div class="card-back"></div></div>
+        <div class="seat-card">
+          <div class="avatar-frame"><div class="avatar a3">N</div></div>
+          <div class="seat-info">
+            <div class="seat-name">NIK0_X</div>
+            <div class="seat-chips">4,200<em>¢</em></div>
+            <div class="seat-meta"><span class="pos-badge">DEALER</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="seat seat-opp2">
+        <div class="hole opp"><div class="card-back"></div><div class="card-back"></div></div>
+        <div class="seat-card turn">
+          <div class="avatar-frame"><div class="avatar a2">K</div></div>
+          <div class="seat-info">
+            <div class="seat-name">KIRA_77</div>
+            <div class="seat-chips">5,500<em>¢</em></div>
+            <div class="seat-meta"><span style="color:var(--magenta-bright);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.2em">› ACTING…</span></div>
+          </div>
+          <div class="timer">
+            <svg viewBox="0 0 54 54"><circle cx="27" cy="27" r="24" stroke="rgba(0,0,0,.5)" stroke-width="2" fill="none"/><circle cx="27" cy="27" r="24" stroke="#ff2b95" stroke-width="2" fill="none" stroke-dasharray="151" stroke-dashoffset="58" stroke-linecap="round"/></svg>
+            <span class="timer-num">14</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="seat seat-opp3">
+        <div class="hole opp"><div class="card-back"></div><div class="card-back"></div></div>
+        <div class="seat-card folded">
+          <div class="avatar-frame"><div class="avatar a4">Z</div></div>
+          <div class="seat-info">
+            <div class="seat-name">ZARA_DLT</div>
+            <div class="seat-chips">3,800<em>¢</em></div>
+            <div class="seat-meta"><span style="color:var(--grey);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.2em">[FOLDED]</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="seat seat-opp4">
+        <div class="seat-card">
+          <div class="avatar-frame"><div class="avatar a5">O</div></div>
+          <div class="seat-info">
+            <div class="seat-name">OMAR_RTX</div>
+            <div class="seat-chips">6,800<em>¢</em></div>
+            <div class="seat-meta"><span class="pos-badge sb">SB</span></div>
+          </div>
+        </div>
+        <div class="hole opp"><div class="card-back"></div><div class="card-back"></div></div>
+      </div>
+
+      <div class="seat seat-me">
+        <div class="seat-card">
+          <div class="avatar-frame"><div class="avatar a1">U</div></div>
+          <div class="seat-info">
+            <div class="seat-name me">USER//YOU</div>
+            <div class="seat-chips">3,200<em>¢</em></div>
+            <div class="seat-meta"><span class="pos-badge bb">BIG BLIND</span></div>
+          </div>
+        </div>
+        <div class="hole me">
+          <div class="card b"><div class="corner tl"><span class="r">A</span><span class="s">♠</span></div><span class="pip">♠</span><div class="corner br"><span class="r">A</span><span class="s">♠</span></div></div>
+          <div class="card r"><div class="corner tl"><span class="r">K</span><span class="s">♥</span></div><span class="pip">♥</span><div class="corner br"><span class="r">K</span><span class="s">♥</span></div></div>
+        </div>
+      </div>
+
+      <div class="bet-chip bet-1"><span>50</span></div>
+      <div class="bet-chip bet-2"><span>200</span></div>
+      <div class="bet-chip bet-4"><span>100</span></div>
+      <div class="bet-chip bet-me"><span>200</span></div>
+    </div>
+  </div>
+
+  <!-- Action panel -->
+  <div class="action">
+    <div class="action-header">
+      <span>› AWAITING&nbsp;<b>USER.INPUT</b></span>
+      <span>BLIND&nbsp;200&nbsp;//&nbsp;CALL&nbsp;<b>100¢</b></span>
+    </div>
+    <div class="action-row">
+      <button class="btn danger">Fold<span class="small">// abandon</span></button>
+      <button class="btn">Call · 100¢<span class="small">// match</span></button>
+    </div>
+    <div class="slider-row">
+      <span class="slider-meta">RAISE<b>340¢</b></span>
+      <div class="slider-track"><div class="slider-fill"></div><div class="slider-thumb"></div></div>
+    </div>
+    <div class="preset-row">
+      <button class="preset">MIN</button>
+      <button class="preset active">½ POT</button>
+      <button class="preset">¾ POT</button>
+      <button class="preset">POT</button>
+      <button class="preset">ALL-IN</button>
+    </div>
+    <div style="height:10px"></div>
+    <button class="btn primary" style="width:100%;font-size:14px">› Raise · 340¢<span class="small">// commit transaction</span></button>
+  </div>
+
+</div>
+
+<div class="foot">PT://NEON-TOKYO · BUILD <b>02.0426</b> · WSS&nbsp;LATENCY <b>42ms</b> · <b>READY</b></div>
+
+<script>
+function showLayout(which){
+  document.querySelectorAll('.layout').forEach(l=>l.classList.remove('active'));
+  document.querySelectorAll('.tabs a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('layout-'+which).classList.add('active');
+  document.getElementById('tab-'+which).classList.add('active');
+  document.getElementById('playerCount').textContent = which==='1v1' ? '2' : '5';
+}
+</script>
+</body>
+</html>
